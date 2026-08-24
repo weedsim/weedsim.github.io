@@ -32,9 +32,9 @@ Unity로 게임 클라이언트를 만드는 심호연입니다.
 - 보안 관제
 - 물리학 전공
 
-자세한 경력은 [LinkedIn](https://www.linkedin.com/in/호연-심-abbb08120)에 있습니다.
+자세한 경력은 [LinkedIn](https://www.linkedin.com/in/weedsim0)에 있습니다.
 
 ## 링크
 
 - GitHub: [@weedsim](https://github.com/weedsim)
-- LinkedIn: [@심호연](https://www.linkedin.com/in/호연-심-abbb08120)
+- LinkedIn: [@심호연](https://www.linkedin.com/in/weedsim0)

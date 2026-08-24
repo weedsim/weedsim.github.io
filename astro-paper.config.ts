@@ -29,7 +29,7 @@ export default defineAstroPaperConfig({
   },
   socials: [
     { name: "github",   url: "https://github.com/weedsim" },
-    { name: "linkedin", url: "https://www.linkedin.com/in/호연-심-abbb08120" },
+    { name: "linkedin", url: "https://www.linkedin.com/in/weedsim0" },
   ],
   shareLinks: [
     { name: "whatsapp", url: "https://wa.me/?text=" },
