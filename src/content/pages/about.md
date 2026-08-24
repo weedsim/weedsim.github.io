@@ -1,37 +1,40 @@
 ---
-title: "About"
-description: "A bit about me and this blog."
+title: 소개
+description: Unity 클라이언트 개발자 심호연입니다.
 ---
 
-AstroPaper is a minimal, accessible and SEO-friendly blog theme built with [Astro](https://astro.build/) and [Tailwind CSS](https://tailwindcss.com/).
+Unity로 게임 클라이언트를 만드는 심호연입니다.
 
+## 관심 분야
 
+- **게임 개발** — 게임 시스템을 어떻게 설계하고 직접 구현할 것인가.
+  기획을 코드로 옮기는 것보다, 나중에 확장 가능한 뼈대를 어떻게 잡을지를
+  고민하는 쪽에 가깝습니다.
+- **AI** — 온디바이스 추론, 게임에 AI를 붙였을 때 실제로 뭐가 되고
+  뭐가 안 되는지.
+- **하드웨어** — CPU와 GPU가 실제로 어떻게 동작하는지. 코드가
+  왜 빠르고 느린지는 결국 여기서 갈립니다.
+- **조립 컴퓨터** — 부품 조합과 실측. 취미이자 위 항목의 실습입니다.
 
-AstroPaper provides a solid foundation for blogs, or even portfolios\_ with full markdown support, built-in dark mode, and a clean layout that works out-of-the-box.
+## 이 블로그
 
-The blog posts in this theme also serve as guides, docs or example articles\_ making AstroPaper a flexible starting point for your next content-driven site.
+만들면서 부딪힌 문제와 그걸 어떻게 풀었는지를 기록합니다.
+잘 된 것뿐 아니라 잘못 설계했다가 갈아엎은 것도요.
 
-## Features
+새로 나온 기술이나 써보고 싶은 기술에 대한 자료도 정리합니다.
+당장 프로젝트에 쓰지 않더라도, 나중에 필요할 때 꺼내 쓸 수 있게
+남겨두는 쪽입니다.
 
-AstroPaper comes with a set of useful features that make content publishing easy and effective:
+## 이력
 
-- SEO-friendly
-- Fast performance
-- Light & dark mode
-- Highly customizable
-- Organizable blog posts
-- Responsive & accessible
-- Static search with [PageFind](https://pagefind.app/)
-- Automatic social image generation
+- Unity 게임 클라이언트 개발
+- 언리얼 엔진 기반 디지털 트윈 R&D
+- 보안 관제
+- 물리학 전공
 
-and so much more.
+자세한 경력은 [LinkedIn](https://www.linkedin.com/in/호연-심-abbb08120)에 있습니다.
 
-## Show your support
+## 링크
 
-If you like [AstroPaper](https://github.com/satnaing/astro-paper), consider giving it a star ⭐️.
-
-Found a bug 🐛 or have an improvement ✨ in mind? Feel free to open an [issue](https://github.com/satnaing/astro-paper/issues), submit a [pull request](https://github.com/satnaing/astro-paper/pulls) or start a [discussion](https://github.com/satnaing/astro-paper/discussions).
-
-If you find this theme helpful, you can also [sponsor me on GitHub](https://github.com/sponsors/satnaing) or [buy me a coffee](https://buymeacoffee.com/satnaing) to show your support — every penny counts.
-
-Kyay zuu! 🙏🏼
+- GitHub: [@weedsim](https://github.com/weedsim)
+- LinkedIn: [@심호연](https://www.linkedin.com/in/호연-심-abbb08120)

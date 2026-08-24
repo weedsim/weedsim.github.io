@@ -30,10 +30,10 @@ const pages = defineCollection({
   loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: "./src/content/pages" }),
   schema: z.object({
     title: z.string(),
+    lang: z.enum(["ko", "en", "ja"]).default("ko"),
     description: z.string().optional(),
     ogImage: z.string().optional(),
     canonicalURL: z.string().optional(),
-    lang: z.enum(["ko", "en", "ja"]).default("ko"),
   }),
 });
 
