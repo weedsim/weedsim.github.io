@@ -1,0 +1,34 @@
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
+allowBuilds:
+  # esbuild — Astro→Vite transitive. postinstall은 플랫폼 바이너리 검증용.
+  # Astro 7(Rolldown)에서는 불필요함을 pnpm build 완주로 확인. 거부 확정.
+  # (검증: 2026-08-24)
+  esbuild: false
+
+trustPolicyExclude:
+  # ─────────────────────────────────────────────────────────────
+  # chokidar@4.0.3 — 임시 예외 (등록: 2026-08-24)
+  # ⚠ 재확인 기한: 2027-02-24 — 이 날짜 이후 반드시 아래 절차 수행
+  #
+  # [등록 사유]
+  #   @astrojs/check가 고정하는 transitive 의존성이라 버전 선택 불가.
+  #   4.0.2/4.0.3은 provenance 없이 배포됨(메인테이너 확인, 탈취 아님).
+  #   https://github.com/paulmillr/chokidar/issues/1440
+  #
+  # [해제 조건] — 하나라도 충족되면 이 블록을 삭제할 것
+  #   1. @astrojs/check가 chokidar 5.x로 올린 버전을 릴리스
+  #   2. chokidar 4.0.4+ 가 provenance를 갖고 배포됨
+  #
+  # [재확인 절차]
+  #   a. pnpm why chokidar          → 아직 4.0.3이 물려 있는지
+  #   b. pnpm view chokidar versions --json  → 상위 버전 존재 여부
+  #   c. https://github.com/paulmillr/chokidar/issues/1440 상태 확인
+  #   d. https://github.com/advisories?query=chokidar  → 신규 권고 확인
+  #   e. 여전히 필요하면 기한을 6개월 연장하고 확인 날짜를 기록
+  #
+  # [확인 이력]
+  #   2026-08-24 최초 등록
+  # ─────────────────────────────────────────────────────────────
+  - 'chokidar@4.0.3'

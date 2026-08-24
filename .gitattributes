@@ -1,0 +1,17 @@
+# 저장소에는 항상 LF로 저장
+* text=auto eol=lf
+
+# 바이너리 — 절대 변환 금지
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+
+# Windows 배치 파일만 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
