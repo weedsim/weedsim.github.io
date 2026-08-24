@@ -33,52 +33,26 @@ const homePath = getRelativeLocaleUrl(locale, "");
     data-home-path={homePath}
     class="app-layout my-1"
   >
-    <section id="hero" class="border-border border-b pt-8 pb-6">
-      <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
-        Mingalaba
-      </h1>
-      <a
-        target="_blank"
-        href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}rss.xml`}
-        class="inline-block"
-        aria-label="RSS Feed"
-        title="RSS Feed"
-      >
-        <IconRss
-          width={20}
-          height={20}
-          class="stroke-accent scale-125 stroke-3 rtl:-rotate-90"
-        />
-        <span class="sr-only">RSS Feed</span>
-      </a>
+<section id="hero" class="pt-8 pb-6">
+  <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
+    다다익선 개발자
+  </h1>
 
-      <p>
-        AstroPaper is a minimal, responsive, accessible and SEO-friendly Astro
-        blog theme. This theme follows best practices and provides accessibility
-        out of the box. Light and dark mode are supported by default. Moreover,
-        additional color schemes can also be configured.
-      </p>
-      <p class="mt-2">
-        Read the blog posts or check{" "}
-        <LinkButton
-          class="hover:text-accent underline decoration-dashed underline-offset-4"
-          href="https://github.com/satnaing/astro-paper#readme"
-        >
-          README
-        </LinkButton>{" "}
-        for more info.
-      </p>
-      {
-        socials.length > 0 && (
-          <div class="mt-4 flex max-sm:flex-col sm:items-center">
-            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">
-              {t.home.socialLinks}:
-            </div>
-            <Socials />
-          </div>
-        )
-      }
-    </section>
+  <p class="mb-4">
+    많이 만들고, 많이 부딪히고, 많이 기록합니다.
+  </p>
+
+  <p>
+    Unity로 게임 클라이언트를 만듭니다. 특히 <strong>게임 시스템을 어떻게 설계하고
+    직접 구현할 것인가</strong>에 관심이 많습니다. 멀티플레이 네트워킹, 데이터 기반
+    구조 설계, 전투 시스템처럼 뼈대가 되는 부분을 주로 다룹니다.
+  </p>
+
+  <p class="mt-4">
+    여기에는 만들면서 부딪힌 문제와 그걸 어떻게 풀었는지를 남깁니다.
+    잘 된 것뿐 아니라 잘못 설계했다가 갈아엎은 것도요.
+  </p>
+</section>
 
     {
       featuredPosts.length > 0 && (
