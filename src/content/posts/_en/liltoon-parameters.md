@@ -416,7 +416,7 @@ Problems in the source itself, found while cross-checking. Verified on
 
 ### `Min・Max` — the name and the description disagree
 
-[影設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/color/shadow.html#パラメーター)
+The `パラメーター` section of [影設定](https://lilxyzw.github.io/lilToon/ja_JP/color/shadow.html)
 
 > AO Mapを **Mix** ～Maxの範囲で再マッピングします。
 
@@ -425,7 +425,7 @@ the value actually means, so the description looks like the typo.
 
 ### `Atras` — the spelling changes mid-sentence
 
-[ラメ設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html#パラメーター)
+The `パラメーター` section of [ラメ設定](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html)
 
 > 形状のマスクテクスチャが **Atras** 化されている場合の縦横の **アトラス** 数の設定です。
 
@@ -435,7 +435,7 @@ clearly means a texture atlas, so `Atras` is the typo. The entry name itself is
 
 ### `コントラスト（後処理）` — it refers to an entry that isn't there
 
-[ラメ設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html#パラメーター)
+The `パラメーター` section of [ラメ設定](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html)
 
 > 後処理で適用されるコントラストです。 **前述のコントラスト** は一定以下の明るさをカットするのに対し、こちらはガンマ値を調整することで密度を制御します。
 
@@ -445,12 +445,11 @@ It points at "the contrast mentioned earlier", but that page has no standalone
 
 ### The cubemap in gloss settings — in the overview, not in the parameters
 
-[光沢設定 › 概要](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html#概要)
+The `概要` section of [光沢設定](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html)
 
 > **Cubemapを指定することで** 反射光をカスタマイズできるため様々な使い方ができます。
 
-That is what the overview promises, but the
-[パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html#パラメーター)
+That is what the overview promises, but the `パラメーター`
 list on the same page holds only eight entries — `滑らかさ` `金属度` `反射率`
 `色` `光沢のタイプ` `複数ライトから光沢を生成` `環境光の反射` `合成モード` —
 with no description of the entry that takes the cubemap.

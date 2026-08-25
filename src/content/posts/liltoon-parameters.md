@@ -386,7 +386,7 @@ LED나 조명처럼 **스스로 빛을 내는 것**에 쓴다. 라이트 강도�
 
 ### `Min・Max` — 항목명과 설명이 어긋난다
 
-[影設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/color/shadow.html#パラメーター)
+[影設定](https://lilxyzw.github.io/lilToon/ja_JP/color/shadow.html) 페이지의 `パラメーター` 절
 
 > AO Mapを **Mix** ～Maxの範囲で再マッピングします。
 
@@ -395,7 +395,7 @@ LED나 조명처럼 **스스로 빛을 내는 것**에 쓴다. 라이트 강도�
 
 ### `Atras` — 한 문장 안에서 표기가 갈린다
 
-[ラメ設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html#パラメーター)
+[ラメ設定](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html) 페이지의 `パラメーター` 절
 
 > 形状のマスクテクスチャが **Atras** 化されている場合の縦横の **アトラス** 数の設定です。
 
@@ -405,7 +405,7 @@ LED나 조명처럼 **스스로 빛을 내는 것**에 쓴다. 라이트 강도�
 
 ### `コントラスト（後処理）` — 없는 항목을 참조한다
 
-[ラメ設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html#パラメーター)
+[ラメ設定](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html) 페이지의 `パラメーター` 절
 
 > 後処理で適用されるコントラストです。 **前述のコントラスト** は一定以下の明るさをカットするのに対し、こちらはガンマ値を調整することで密度を制御します。
 
@@ -415,12 +415,11 @@ LED나 조명처럼 **스스로 빛을 내는 것**에 쓴다. 라이트 강도�
 
 ### 광택 설정의 Cubemap — 개요에만 있고 항목이 없다
 
-[光沢設定 › 概要](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html#概要)
+[光沢設定](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html) 페이지의 `概要` 절
 
 > **Cubemapを指定することで** 反射光をカスタマイズできるため様々な使い方ができます。
 
-개요는 이렇게 안내하는데, 같은 페이지의
-[パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html#パラメーター)
+개요는 이렇게 안내하는데, 같은 페이지의 `パラメーター`
 목록은 `滑らかさ` `金属度` `反射率` `色` `光沢のタイプ`
 `複数ライトから光沢を生成` `環境光の反射` `合成モード` 8개뿐이고, Cubemap을
 지정하는 항목의 설명이 없다.
