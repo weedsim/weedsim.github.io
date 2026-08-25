@@ -25,7 +25,7 @@ description: "3D 기하가 화면의 픽셀이 되기까지 거치는 단계를 
 
 그래서 전체를 순서대로 정리했다. 기준은 Direct3D·Vulkan·OpenGL 공식 문서다.
 
-## Table of contents
+## 목차
 
 ## 왜 "파이프라인"인가
 

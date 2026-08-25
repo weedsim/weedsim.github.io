@@ -19,6 +19,9 @@ import {
 import { transformerFileName } from "./src/utils/transformers/fileName";
 import config from "./astro-paper.config";
 
+/** 목차로 인식할 heading 제목들. 로케일을 추가하면 여기에 덧붙인다. */
+const TOC_HEADING = "목차|(table[ -]of[ -])?contents?|toc";
+
 export default defineConfig({
   site: config.site.url,
   integrations: [
@@ -85,8 +88,20 @@ export default defineConfig({
   markdown: {
     processor: unified({
       remarkPlugins: [
-        remarkToc,
-        [remarkCollapse, { test: "Table of contents" }],
+        // 목차 heading 패턴. remark-toc / remark-collapse 모두 문자열을
+        // `new RegExp('^(' + value + ')$', 'i')` 로 감싸므로 대안을 나열하면
+        // 로케일별 제목을 함께 인식한다. 한국어 글은 `## 목차`,
+        // 영어 글은 `## Table of contents` 를 쓴다.
+        [remarkToc, { heading: TOC_HEADING }],
+        [
+          remarkCollapse,
+          {
+            test: TOC_HEADING,
+            // 기본 요약문이 "Open " + 제목이라 한국어 글에 영어가 섞인다.
+            // 제목을 그대로 쓰고 열림 여부는 <details> 삼각형에 맡긴다.
+            summary: (heading: string) => heading,
+          },
+        ],
       ],
       rehypePlugins: [rehypeCallouts],
     }),
