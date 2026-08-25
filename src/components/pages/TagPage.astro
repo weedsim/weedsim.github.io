@@ -8,6 +8,7 @@ import Breadcrumb from "@/components/Breadcrumb.astro";
 import Card from "@/components/Card.astro";
 import Footer from "@/components/Footer.astro";
 import Pagination from "@/components/Pagination.astro";
+import { tagAlternates } from "@/utils/localeRoutes";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
@@ -20,10 +21,14 @@ const { page, tagName } = Astro.props;
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
+
+// The same tag is spelled differently per locale, so the switcher target is
+// resolved through the tag dictionary rather than by mapping the path across.
+const translations = await tagAlternates(tagName, page.currentPage, locale);
 ---
 
 <Layout title={`${t.pages.tagTitle}: ${tagName} | ${config.site.title}`}>
-  <Header />
+  <Header {translations} />
   <Breadcrumb />
   <Main
     pageTitle={`${t.pages.tagTitle}: ${tagName}`}

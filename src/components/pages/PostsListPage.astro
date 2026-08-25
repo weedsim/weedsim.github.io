@@ -8,6 +8,7 @@ import Main from "@/components/Main.astro";
 import Card from "@/components/Card.astro";
 import Footer from "@/components/Footer.astro";
 import Pagination from "@/components/Pagination.astro";
+import { postListAlternates } from "@/utils/localeRoutes";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
@@ -17,10 +18,13 @@ const { page } = Astro.props;
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
+
+// A locale only has page N if it has enough posts to reach it.
+const translations = await postListAlternates(page.currentPage, locale);
 ---
 
 <Layout title={`${t.pages.postsTitle} | ${config.site.title}`}>
-  <Header />
+  <Header {translations} />
   <Breadcrumb />
   <Main pageTitle={t.pages.postsTitle} pageDesc={t.pages.postsDesc}>
     <ul>

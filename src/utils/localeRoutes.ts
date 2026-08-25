@@ -4,7 +4,10 @@ import { getSortedPosts } from "./getSortedPosts";
 import { getUniqueTags } from "./getUniqueTags";
 import { getPostSlug, getPostUrl } from "./getPostPaths";
 import { filterByLocale } from "./filterByLocale";
-import { slugifyAll } from "./slugify";
+import { slugifyAll, slugifyStr } from "./slugify";
+import { LOCALES } from "@/i18n/locales";
+import { translateTag } from "@/i18n/tags";
+import { getRelativeLocaleUrl } from "astro:i18n";
 import config from "@/config";
 
 /**
@@ -128,4 +131,73 @@ export async function getTranslationUrl(
 export async function getLocalePage(name: string, locale: string) {
   const pages = filterByLocale(await getCollection("pages"), locale);
   return pages.find(entry => entry.id.split("/").pop() === name);
+}
+
+/**
+ * Language-switcher targets for a paginated post list.
+ *
+ * A locale only has page N if it has enough posts to reach it, so the page
+ * number is checked instead of blindly mapping the path across.
+ */
+export async function postListAlternates(currentPage: number, locale: string) {
+  const alternates: Record<string, string | null> = {};
+
+  for (const { code } of LOCALES) {
+    if (code === locale) continue;
+    const posts = await localePosts(code, true);
+    const lastPage = Math.max(
+      1,
+      Math.ceil(posts.length / config.posts.perPage)
+    );
+    alternates[code] =
+      currentPage <= lastPage
+        ? getRelativeLocaleUrl(
+            code,
+            currentPage === 1 ? "posts" : `posts/${currentPage}`
+          )
+        : null;
+  }
+
+  return alternates;
+}
+
+/**
+ * Language-switcher targets for one tag page.
+ *
+ * The same tag is spelled differently per locale (안드로이드 / Android), so the
+ * label is translated first and the resulting page is only linked when it was
+ * actually generated — a tag with no posts in the target locale has no page.
+ */
+export async function tagAlternates(
+  tagName: string,
+  currentPage: number,
+  locale: string
+) {
+  const alternates: Record<string, string | null> = {};
+
+  for (const { code } of LOCALES) {
+    if (code === locale) continue;
+
+    const targetSlug = slugifyStr(translateTag(tagName, locale, code));
+    const posts = await localePosts(code, true);
+    const tagPosts = posts.filter(({ data }) =>
+      slugifyAll(data.tags).includes(targetSlug)
+    );
+    const lastPage = Math.max(
+      1,
+      Math.ceil(tagPosts.length / config.posts.perPage)
+    );
+
+    alternates[code] =
+      tagPosts.length > 0 && currentPage <= lastPage
+        ? getRelativeLocaleUrl(
+            code,
+            currentPage === 1
+              ? `tags/${targetSlug}`
+              : `tags/${targetSlug}/${currentPage}`
+          )
+        : null;
+  }
+
+  return alternates;
 }
