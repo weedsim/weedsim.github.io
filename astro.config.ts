@@ -24,6 +24,13 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
+      // Emits <xhtml:link rel="alternate" hreflang> per URL. The locale is
+      // detected from the path prefix; URLs with no prefix count as
+      // `defaultLocale`. Keep these keys in sync with i18n.locales below.
+      i18n: {
+        defaultLocale: "ko",
+        locales: { ko: "ko-KR", en: "en-US" },
+      },
       filter: page =>
         config.features?.showArchives !== false || !page.endsWith("/archives/"),
     }),
