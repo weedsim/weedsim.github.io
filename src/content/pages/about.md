@@ -1,5 +1,6 @@
 ---
 title: 소개
+lang: ko
 description: Unity 클라이언트 개발자 심호연입니다.
 ---
 

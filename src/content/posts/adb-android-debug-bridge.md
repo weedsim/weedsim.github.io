@@ -1,6 +1,8 @@
 ---
 pubDatetime: 2026-08-25T13:00:00+09:00
 title: "adb 정리: 안드로이드 디버그 브리지의 구조와 명령어"
+lang: ko
+translationKey: adb-android-debug-bridge
 featured: false
 draft: false
 tags:
