@@ -17,6 +17,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   filesystem: { ko: "파일시스템", en: "File System" },
   linux: { ko: "리눅스", en: "Linux" },
   windows: { ko: "윈도우", en: "Windows" },
+  shader: { ko: "셰이더", en: "Shader" },
 };
 
 /**
