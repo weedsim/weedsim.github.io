@@ -411,19 +411,51 @@ is certain stops at the two sentences above.
 
 ## Things that snag when you read the docs
 
-Problems in the source itself, found while cross-checking.
+Problems in the source itself, found while cross-checking. Verified on
+2026-08-26; each item links to where it lives.
 
-- **`Min・Max` (shadow settings)** — the description reads
-  「AO Mapを **Mix** ～Maxの範囲で再マッピング」. Since the entry is named
-  `Min・Max`, the `Mix` in the source looks like a typo.
-- **`Atras` (glitter settings)** — written in Roman letters as `Atras` rather
-  than the katakana 「アトラス」. From context it means a texture atlas, so this
-  looks like a typo in the source.
-- **`コントラスト（後処理）` (glitter settings)** — the description refers to
-  "the contrast mentioned earlier", but that page's parameter list has no
-  standalone 「コントラスト」 entry.
-- **The cubemap in gloss settings** — the overview mentions customizing the
-  cubemap, but the docs carry no individual description for that entry.
+### `Min・Max` — the name and the description disagree
+
+[影設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/color/shadow.html#パラメーター)
+
+> AO Mapを **Mix** ～Maxの範囲で再マッピングします。
+
+The entry is named `Min・Max` but the description says `Mix～Max`. `Min` is what
+the value actually means, so the description looks like the typo.
+
+### `Atras` — the spelling changes mid-sentence
+
+[ラメ設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html#パラメーター)
+
+> 形状のマスクテクスチャが **Atras** 化されている場合の縦横の **アトラス** 数の設定です。
+
+The same sentence uses Roman `Atras` first and katakana `アトラス` second. It
+clearly means a texture atlas, so `Atras` is the typo. The entry name itself is
+`Atras`, so that is what shows up in the inspector too.
+
+### `コントラスト（後処理）` — it refers to an entry that isn't there
+
+[ラメ設定 › パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/glitter.html#パラメーター)
+
+> 後処理で適用されるコントラストです。 **前述のコントラスト** は一定以下の明るさをカットするのに対し、こちらはガンマ値を調整することで密度を制御します。
+
+It points at "the contrast mentioned earlier", but that page has no standalone
+`コントラスト` entry. The list runs from `UV Mode` to `コントラスト（後処理）`,
+21 entries, and it is not among them.
+
+### The cubemap in gloss settings — in the overview, not in the parameters
+
+[光沢設定 › 概要](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html#概要)
+
+> **Cubemapを指定することで** 反射光をカスタマイズできるため様々な使い方ができます。
+
+That is what the overview promises, but the
+[パラメーター](https://lilxyzw.github.io/lilToon/ja_JP/reflections/reflection.html#パラメーター)
+list on the same page holds only eight entries — `滑らかさ` `金属度` `反射率`
+`色` `光沢のタイプ` `複数ライトから光沢を生成` `環境光の反射` `合成モード` —
+with no description of the entry that takes the cubemap.
+
+---
 
 So the official docs are not complete either. Running into an entry that is in
 the inspector but not in the docs is normal; when that happens, moving the
