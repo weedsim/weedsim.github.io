@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && pagefind --site dist && node -e \"require('fs').cpSync('dist/pagefind','public/pagefind',{recursive:true})\"",
+    "build": "astro check && astro build && node -e \"require('fs').rmSync('dist/pagefind',{recursive:true,force:true})\" && pagefind --site dist && node -e \"const fs=require('fs');fs.rmSync('public/pagefind',{recursive:true,force:true});fs.cpSync('dist/pagefind','public/pagefind',{recursive:true})\"",
     "preview": "astro preview",
     "sync": "astro sync",
     "astro": "astro",
