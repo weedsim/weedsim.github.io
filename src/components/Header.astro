@@ -10,7 +10,22 @@ import IconX from "@/assets/icons/IconX.svg";
 import LinkButton from "./LinkButton.astro";
 import { stripBase, stripLocale } from "@/utils/withBase";
 import { useTranslations } from "@/i18n";
+import { LOCALES } from "@/i18n/locales";
 import config from "@/config";
+
+type Props = {
+  /**
+   * Where the language switcher should point, per locale code.
+   *
+   * Omit it on pages that exist in every locale — the switcher then maps the
+   * current path across. Post pages pass this explicitly because a post may
+   * have no translation; `null` for a locale sends the switcher to that
+   * locale's home page instead of a URL that was never generated.
+   */
+  translations?: Record<string, string | null>;
+};
+
+const { translations } = Astro.props;
 
 const { site, features } = config;
 
@@ -32,6 +47,17 @@ const isActive = (path: string) => {
   const pathArray = path.split("/").filter(p => p.trim());
   return currentPath === path || currentPathArray[0] === pathArray[0];
 };
+
+const otherLocales = LOCALES.filter(({ code }) => code !== locale).map(
+  ({ code, label }) => {
+    const explicit = translations?.[code];
+    const href =
+      explicit === undefined
+        ? getRelativeLocaleUrl(code, currentPath.replace(/^\//, ""))
+        : (explicit ?? getRelativeLocaleUrl(code, ""));
+    return { code, label, href };
+  }
+);
 ---
 
 <a
@@ -142,6 +168,15 @@ const isActive = (path: string) => {
               </LinkButton>
             </li>
           )
+        }
+        {
+          otherLocales.map(({ code, label, href }) => (
+            <li class="col-span-2">
+              <a href={href} hreflang={code} lang={code} class="text-sm">
+                {label}
+              </a>
+            </li>
+          ))
         }
         {
           features.lightAndDarkMode && (

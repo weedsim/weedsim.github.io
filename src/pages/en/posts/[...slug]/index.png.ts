@@ -1,8 +1,7 @@
 import { ogImagePaths } from "@/utils/localeRoutes";
-import config from "@/config";
 
 export { GET } from "@/utils/postOgImage";
 
 export async function getStaticPaths() {
-  return ogImagePaths(config.site.lang);
+  return ogImagePaths("en");
 }

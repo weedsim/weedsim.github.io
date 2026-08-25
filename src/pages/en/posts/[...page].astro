@@ -2,10 +2,9 @@
 import type { GetStaticPaths, GetStaticPathsOptions } from "astro";
 import PostsListPage from "@/components/pages/PostsListPage.astro";
 import { postListPaths } from "@/utils/localeRoutes";
-import config from "@/config";
 
 export const getStaticPaths = (async (options: GetStaticPathsOptions) =>
-  postListPaths(options, config.site.lang)) satisfies GetStaticPaths;
+  postListPaths(options, "en")) satisfies GetStaticPaths;
 ---
 
 <PostsListPage page={Astro.props.page} />

@@ -3,8 +3,6 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import SearchPage from "@/components/pages/SearchPage.astro";
 import config from "@/config";
 
-// Redirect to 404 page if `search` feature is not enabled.
-// Astro.rewrite() belongs on the route, not inside a shared component.
 const locale = Astro.currentLocale ?? config.site.lang;
 const notFoundUrl = getRelativeLocaleUrl(locale, "404");
 if (config.features.search !== "pagefind" && notFoundUrl) {

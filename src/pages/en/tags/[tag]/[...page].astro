@@ -2,10 +2,9 @@
 import type { GetStaticPathsOptions } from "astro";
 import TagPage from "@/components/pages/TagPage.astro";
 import { tagPaths } from "@/utils/localeRoutes";
-import config from "@/config";
 
 export async function getStaticPaths(options: GetStaticPathsOptions) {
-  return tagPaths(options, config.site.lang);
+  return tagPaths(options, "en");
 }
 ---
 

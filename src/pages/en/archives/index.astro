@@ -3,7 +3,6 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import ArchivesPage from "@/components/pages/ArchivesPage.astro";
 import config from "@/config";
 
-// Redirect to 404 page if `showArchives` config is false.
 const locale = Astro.currentLocale ?? config.site.lang;
 const notFoundUrl = getRelativeLocaleUrl(locale, "404");
 if (!config.features.showArchives && notFoundUrl) {

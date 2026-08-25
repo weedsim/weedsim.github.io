@@ -5,14 +5,21 @@ import Footer from "@/components/Footer.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { useTranslations } from "@/i18n";
+import { LOCALES } from "@/i18n/locales";
 import config from "@/config";
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
+
+// There is no per-locale 404 route (GitHub Pages serves a single /404.html),
+// so send the language switcher to each locale's home instead of /<locale>/404.
+const translations = Object.fromEntries(
+  LOCALES.map(({ code }) => [code, null])
+);
 ---
 
 <Layout title={`${t.notFound.title} | ${config.site.title}`}>
-  <Header />
+  <Header {translations} />
 
   <main
     id="main-content"
