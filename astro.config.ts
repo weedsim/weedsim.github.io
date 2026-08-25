@@ -30,7 +30,11 @@ export default defineConfig({
   ],
   // ─────────────────────────────────────────────────────────────
   // 다국어 URL 구조 — B안 확정 (결정: 2026-08-24)
-  //   /  = 한국어(기본),  /en/,  /ja/
+  //   /  = 한국어(기본),  /en/
+  //
+  // ⚠ 2026-08-25: 3개국어(ko/en/ja) 계획은 취소하고 ko/en 2개 국어로 축소.
+  //   영어는 기계 번역 수준의 품질을 허용하기로 함(사용자 결정).
+  //   src/i18n/lang/ja.ts는 남아 있지만 현재 쓰이지 않는다.
   //
   // [근거]
   //   A안(/ko/ 대칭 구조)은 prefixDefaultLocale: true를 요구하는데,
@@ -52,15 +56,19 @@ export default defineConfig({
   // [연동 주의]
   //   locales는 astro-paper.config.ts의 site.lang과 연동된다.
   //   한쪽만 바꾸면 MissingLocaleError로 빌드가 깨진다.
-  //   ja 추가 시 src/i18n/lang/ja.ts도 함께 추가할 것.
+  //   로케일을 추가할 때는 src/i18n/lang/<locale>.ts도 함께 추가할 것.
+  //
+  //   글은 lang 필드로 로케일이 갈린다. src/pages/ 아래 루트 라우트는
+  //   filterByLocale()로 기본 로케일(ko)만 남기고, src/pages/en/ 라우트는
+  //   "en"을 명시해 넘긴다. getStaticPaths()에는 URL이 없으므로
+  //   Astro.currentLocale을 쓸 수 없다 — 로케일을 하드코딩해야 한다.
   //
   // [재검토 조건]
-  //   글 대부분을 3개국어로 번역하게 되거나, 주 언어가 한국어가 아니게 되면
-  //   A안의 대칭성이 리다이렉트 비용을 넘어선다. 그때 다시 판단할 것.
+  //   주 언어가 한국어가 아니게 되면 A안의 대칭성이 리다이렉트 비용을
+  //   넘어선다. 그때 다시 판단할 것.
   // ─────────────────────────────────────────────────────────────
   i18n: {
-    // 번역할 글이 생기면 "en", "ja"를 추가한다. (착수 전까지는 ko 단독 유지)
-    locales: ["ko"],
+    locales: ["ko", "en"],
     defaultLocale: "ko",
     routing: {
       // B안: 기본 로케일(ko)에는 접두사를 붙이지 않는다.
