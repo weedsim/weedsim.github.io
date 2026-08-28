@@ -15,6 +15,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   androidStudio: { ko: "안드로이드 스튜디오", en: "Android Studio" },
   appSigning: { ko: "앱 서명", en: "App Signing" },
   keystore: { ko: "키스토어", en: "Keystore" },
+  security: { ko: "보안", en: "Security" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
