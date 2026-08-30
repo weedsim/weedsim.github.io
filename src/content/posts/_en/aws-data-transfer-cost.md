@@ -1,5 +1,5 @@
 ---
-pubDatetime: 2026-08-28T18:00:00+09:00
+pubDatetime: 2026-08-30T15:00:00+09:00
 title: "AWS Data Transfer Costs: Read the Boundaries, Not the Rate Table"
 lang: en
 translationKey: aws-data-transfer-cost

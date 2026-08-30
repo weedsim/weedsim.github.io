@@ -1,5 +1,5 @@
 ---
-pubDatetime: 2026-08-28T18:00:00+09:00
+pubDatetime: 2026-08-30T15:00:00+09:00
 title: "AWS 데이터 전송 비용: 요금표가 아니라 경계선을 봐야 한다"
 lang: ko
 translationKey: aws-data-transfer-cost
