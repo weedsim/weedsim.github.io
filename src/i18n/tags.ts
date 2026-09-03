@@ -21,6 +21,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   pricing: { ko: "요금", en: "Pricing" },
   backnd: { ko: "뒤끝", en: "BACKND" },
   gameServer: { ko: "게임 서버", en: "Game Server" },
+  camera: { ko: "카메라", en: "Camera" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
