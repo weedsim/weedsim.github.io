@@ -23,6 +23,8 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   gameServer: { ko: "게임 서버", en: "Game Server" },
   camera: { ko: "카메라", en: "Camera" },
   input: { ko: "입력", en: "Input" },
+  multiplayer: { ko: "멀티플레이어", en: "Multiplayer" },
+  physics: { ko: "물리", en: "Physics" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
