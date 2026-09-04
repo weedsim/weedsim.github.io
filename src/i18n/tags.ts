@@ -29,6 +29,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   assetStore: { ko: "에셋스토어", en: "Asset Store" },
   container: { ko: "컨테이너", en: "Container" },
   infrastructure: { ko: "인프라", en: "Infrastructure" },
+  versionControl: { ko: "버전 관리", en: "Version Control" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
