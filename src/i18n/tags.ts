@@ -25,6 +25,8 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   input: { ko: "입력", en: "Input" },
   multiplayer: { ko: "멀티플레이어", en: "Multiplayer" },
   physics: { ko: "물리", en: "Physics" },
+  sound: { ko: "사운드", en: "Sound" },
+  assetStore: { ko: "에셋스토어", en: "Asset Store" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
