@@ -31,6 +31,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   infrastructure: { ko: "인프라", en: "Infrastructure" },
   versionControl: { ko: "버전 관리", en: "Version Control" },
   optimization: { ko: "최적화", en: "Optimization" },
+  reinforcementLearning: { ko: "강화학습", en: "Reinforcement Learning" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
