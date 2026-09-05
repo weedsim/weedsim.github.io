@@ -30,6 +30,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   container: { ko: "컨테이너", en: "Container" },
   infrastructure: { ko: "인프라", en: "Infrastructure" },
   versionControl: { ko: "버전 관리", en: "Version Control" },
+  optimization: { ko: "최적화", en: "Optimization" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
