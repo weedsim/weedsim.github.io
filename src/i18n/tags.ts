@@ -35,6 +35,8 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   encoding: { ko: "인코딩", en: "Encoding" },
   unicode: { ko: "유니코드", en: "Unicode" },
   hangul: { ko: "한글", en: "Hangul" },
+  serialization: { ko: "직렬화", en: "Serialization" },
+  data: { ko: "데이터", en: "Data" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
   filesystem: { ko: "파일시스템", en: "File System" },
