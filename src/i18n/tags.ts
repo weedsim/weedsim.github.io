@@ -47,6 +47,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   shader: { ko: "셰이더", en: "Shader" },
   ondeviceAi: { ko: "온디바이스 AI", en: "On-device AI" },
   localLlm: { ko: "로컬 LLM", en: "Local LLM" },
+  agent: { ko: "에이전트", en: "Agent" },
   advertising: { ko: "광고", en: "Advertising" },
   monetization: { ko: "수익화", en: "Monetization" },
   mobile: { ko: "모바일", en: "Mobile" },
