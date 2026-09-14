@@ -45,6 +45,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   linux: { ko: "리눅스", en: "Linux" },
   windows: { ko: "윈도우", en: "Windows" },
   shader: { ko: "셰이더", en: "Shader" },
+  glitch: { ko: "글리치", en: "Glitch" },
   ondeviceAi: { ko: "온디바이스 AI", en: "On-device AI" },
   localLlm: { ko: "로컬 LLM", en: "Local LLM" },
   agent: { ko: "에이전트", en: "Agent" },
