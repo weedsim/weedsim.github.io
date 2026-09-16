@@ -133,14 +133,36 @@ Shader "Example/URPUnlitShaderBasic"
 }
 ```
 
-빌트인 예제와 비교하면 **세 군데**가 다르다. 옛 튜토리얼을 옮겨 붙일 때
-걸리는 지점이 정확히 이 셋이다.
+빌트인 예제와 비교하면 ~~**세 군데**~~ **두 군데**가 다르다. 옛 튜토리얼을
+옮겨 붙일 때 걸리는 지점이 여기다.
 
 | | 빌트인 | URP |
 |---|---|---|
 | 파이프라인 태그 | 없음 | `"RenderPipeline" = "UniversalPipeline"` |
-| 블록 | `CGPROGRAM` … `ENDCG` | `HLSLPROGRAM` … `ENDHLSL` |
+| ~~블록~~ | ~~`CGPROGRAM` … `ENDCG`~~ | ~~`HLSLPROGRAM` … `ENDHLSL`~~ |
 | 인클루드 | `UnityCG.cginc` | `.../ShaderLibrary/Core.hlsl` |
+
+> **정정 (2026-09-16)**
+>
+> 줄을 그은 행은 **틀린 내용**이다. 다음 글을 쓰면서 Unity의 현행 빌트인 셰이더
+> 예제 열세 개를 확인했는데, **전부 `HLSLPROGRAM` / `ENDHLSL`** 을 쓴다.
+> 빌트인이 `CGPROGRAM`을 쓴다는 것은 사실이 아니다.
+>
+> ShaderLab 코드 블록 레퍼런스의 서술은 이렇다. `HLSLPROGRAM`·`HLSLINCLUDE`는
+> **모든 렌더 파이프라인과 호환**되고, `CGPROGRAM`·`CGINCLUDE`는 **빌트인
+> 렌더 파이프라인에서만 호환**된다. 즉 `HLSLPROGRAM`은 URP 쪽 표시가 아니라
+> **양쪽 다 되는 쪽**이고, 빌트인 전용인 것은 `CGPROGRAM` 쪽이다. 내가 방향을
+> 반대로 적었다.
+>
+> 그리고 실제 함정은 키워드가 아니라 그 뒤에 있었다. 문서가 `CGPROGRAM`을
+> 쓰면 **여러 내장 인클루드 파일이 기본으로 포함된다**고 적어놨고, 그래서
+> **키워드만 `HLSLPROGRAM`으로 바꾸면 동작하지 않을 수 있다**고 경고한다.
+> 옛 코드가 안 도는 원인은 블록 키워드 자체가 아니라 **그 키워드가 끌고 오던
+> 자동 인클루드**다.
+>
+> 따라서 위 표에서 실제 차이는 **두 가지**다 — `RenderPipeline` 태그와
+> 인클루드. 자세한 내용은
+> [빌트인 셰이더 예제 13개](/posts/builtin-shader-examples/)에 정리했다.
 
 **`RenderPipeline` 태그**가 있어야 URP가 이 SubShader를 자기 것으로 인식한다.
 없으면 URP가 쓰지 않는다.
@@ -465,8 +487,9 @@ public class HitFlash : MonoBehaviour
 - **서피스 셰이더는 빌트인 전용이다.** URP·HDRP·커스텀 SRP 전부 "아니오".
   `#pragma surface`로 시작하는 코드는 URP에서 안 돈다.
 - **Shader Graph는 빌트인에서도 된다.** 안 되는 건 커스텀 SRP뿐이다.
-- **URP 셰이더는 세 가지가 다르다** — `RenderPipeline` 태그, `HLSLPROGRAM`,
-  그리고 `Core.hlsl`. `UnityCG.cginc`를 인클루드한 코드는 옮겨 붙일 수 없다.
+- **URP 셰이더는 ~~세 가지~~ 두 가지가 다르다** — `RenderPipeline` 태그와
+  `Core.hlsl`. `UnityCG.cginc`를 인클루드한 코드는 옮겨 붙일 수 없다.
+  ~~`HLSLPROGRAM`~~ 프로그램 블록은 차이가 아니다. 본문의 정정을 참고.
 - **배리언트는 키워드 집합의 곱이다.** 집합 열 개면 1024개, 세 개짜리 여덟
   개면 6,000개가 넘는다. 문서의 표현이 조합 폭발이다.
 - **런타임에 안 바꿀 옵션은 `shader_feature`.** `multi_compile`은 쓰든 안 쓰든

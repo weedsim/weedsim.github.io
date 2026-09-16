@@ -134,14 +134,36 @@ Shader "Example/URPUnlitShaderBasic"
 }
 ```
 
-Compared with a Built-In example, **three things differ** — and those three are
-exactly where porting an old tutorial breaks.
+Compared with a Built-In example, ~~**three things differ**~~ **two things
+differ** — and that's where porting an old tutorial breaks.
 
 | | Built-In | URP |
 |---|---|---|
 | Pipeline tag | none | `"RenderPipeline" = "UniversalPipeline"` |
-| Block | `CGPROGRAM` … `ENDCG` | `HLSLPROGRAM` … `ENDHLSL` |
+| ~~Block~~ | ~~`CGPROGRAM` … `ENDCG`~~ | ~~`HLSLPROGRAM` … `ENDHLSL`~~ |
 | Include | `UnityCG.cginc` | `.../ShaderLibrary/Core.hlsl` |
+
+> **Correction (2026-09-16)**
+>
+> The struck-through row is **wrong**. Writing the next post, I checked all
+> thirteen of Unity's current Built-In shader examples, and **every one uses
+> `HLSLPROGRAM` / `ENDHLSL`**. It is not true that Built-In uses `CGPROGRAM`.
+>
+> The ShaderLab code blocks reference puts it this way: `HLSLPROGRAM` and
+> `HLSLINCLUDE` are **compatible with all render pipelines**, while `CGPROGRAM`
+> and `CGINCLUDE` are **compatible only with the Built-In Render Pipeline**. So
+> `HLSLPROGRAM` isn't a URP marker — it's **the one that works in both** — and
+> `CGPROGRAM` is the Built-In-only one. I had the direction backwards.
+>
+> And the real catch wasn't the keyword but what sits behind it. The manual says
+> that with `CGPROGRAM`, Unity **includes several built-in shader include files
+> by default**, and warns that **swapping the keyword to `HLSLPROGRAM` alone can
+> stop a shader from working**. What breaks old code isn't the block keyword —
+> it's **the automatic includes that keyword was dragging along.**
+>
+> So the table above really holds **two** differences: the `RenderPipeline` tag
+> and the include. The details are in
+> [Thirteen Built-In Shader Examples](/en/posts/builtin-shader-examples/).
 
 **The `RenderPipeline` tag** is what makes URP recognize the SubShader as its
 own. Without it, URP won't use it.
@@ -478,9 +500,10 @@ vertex becomes a pixel is laid out in
   Code starting with `#pragma surface` won't run in URP.
 - **Shader Graph does work in Built-In.** Custom SRP is the only place it
   doesn't.
-- **A URP shader differs in three ways** — the `RenderPipeline` tag,
-  `HLSLPROGRAM`, and `Core.hlsl`. Code that includes `UnityCG.cginc` can't be
-  pasted across.
+- **A URP shader differs in ~~three~~ two ways** — the `RenderPipeline` tag and
+  `Core.hlsl`. Code that includes `UnityCG.cginc` can't be pasted across.
+  ~~`HLSLPROGRAM`~~ The program block is not one of the differences — see the
+  correction in the body.
 - **Variants are the product of the keyword sets.** Ten sets gives 1024; eight
   sets of three gives over 6,000. The manual's word for it is combinatorial
   explosion.
