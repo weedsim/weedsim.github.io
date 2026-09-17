@@ -22,6 +22,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   backnd: { ko: "뒤끝", en: "BACKND" },
   gameServer: { ko: "게임 서버", en: "Game Server" },
   camera: { ko: "카메라", en: "Camera" },
+  animation: { ko: "애니메이션", en: "Animation" },
   input: { ko: "입력", en: "Input" },
   multiplayer: { ko: "멀티플레이어", en: "Multiplayer" },
   physics: { ko: "물리", en: "Physics" },
