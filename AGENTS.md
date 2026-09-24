@@ -101,16 +101,18 @@ user's motivation wastes a whole post.
    Where the docs do not state something, **say that they do not** rather than
    asserting it.
 6. **Write the Korean post** to `src/content/posts/<ascii-slug>.md`.
-7. **Verify the structure** (section 6 below), then hand the file to the user
-   and commit it. Do this *before* asking anything.
+7. **Run the single-file check** (section 6.1), then hand the file to the user
+   and commit it. Do this *before* asking anything. The pair check does not
+   apply yet — the English file does not exist.
 8. **Ask two questions and wait:**
    - **계기** — why did the user actually save this clipping? Never invent it.
    - **태그** — the tag list, and whether `src/i18n/tags.ts` needs a new row.
 9. **Apply the answers.** If the motivation changes what the post is about,
    rewrite it rather than patching the intro.
 10. **Write the English post** to `src/content/posts/_en/<same-slug>.md`.
-11. **Verify ko/en parity** (section 6), commit both, then give the user the
-    `pnpm build` command and the commit message.
+11. **Run the single-file check on the English file (6.1), then the pair check
+    (6.2)**, commit both, and give the user the `pnpm build` command (6.3) and
+    the commit message.
 
 ---
 
@@ -212,36 +214,100 @@ Apply the same correction to both the Korean and English copies.
 
 ## 6. Verification
 
-Run this on the Korean file, then on the English file, and compare.
+Three checks at three different moments. **Do not run the pair check at
+pipeline step 7** — only the Korean file exists then.
+
+### 6.1 Single file — run right after writing each file
+
+```bash
+f=src/content/posts/<slug>.md          # or src/content/posts/_en/<slug>.md
+
+printf 'CR:%s h2:%s h3:%s fences:%s rows:%s tags:%s refs:%s links:%s slug:%s quotes:%s\n' \
+  "$(grep -c $'\r' "$f")" \
+  "$(grep -c '^## ' "$f")" \
+  "$(grep -c '^### ' "$f")" \
+  "$(grep -c '^```' "$f")" \
+  "$(grep -c '^|' "$f")" \
+  "$(sed -n '/^tags:/,/^description:/p' "$f" | grep -c '^  - ')" \
+  "$(grep -c '^- \[[^]]*\](http' "$f")" \
+  "$(grep -o '](/posts/[^)]*)' "$f" | wc -l)" \
+  "$(grep -c '^slug:' "$f")" \
+  "$(awk 'BEGIN{i=0;p=0;c=0} /^```/{i=!i} {if(!i && /^> /){if(!p)c++;p=1} else p=0} END{print c}' "$f")"
+```
+
+What this file must satisfy on its own:
+
+- **`CR:0`** — the repo is LF only.
+- **`slug:0`** — there is no `slug` front-matter field.
+- **`fences` is even.** An odd count means an unclosed code block, which
+  swallows the rest of the page.
+- **`translationKey` equals the filename** without `.md`.
+- **`pubDatetime` is in the past.** Compare against `TZ=Asia/Seoul date`. A
+  future date is dropped silently in a production build — `astro check` and
+  `pnpm build` both stay quiet about it.
+
+Then three things a count can't tell you:
+
+```bash
+# (a) every tag is either in the dictionary or deliberately locale-neutral
+sed -n '/^tags:/,/^description:/p' "$f" | sed -n 's/^  - //p' | while read -r t; do
+  grep -q "\"$t\"" src/i18n/tags.ts || echo "not in tags.ts: $t"
+done
+
+# (b) every internal link target exists in BOTH languages
+grep -o '](/posts/[^)]*)' "$f" | sed 's#](/posts/##; s#/*)##' | sort -u | while read -r k; do
+  [ -f "src/content/posts/$k.md" ]     || echo "missing ko: $k"
+  [ -f "src/content/posts/_en/$k.md" ] || echo "missing en: $k"
+done
+
+# (c) every '>' line outside a code fence is a real blockquote
+awk 'BEGIN{i=0} /^```/{i=!i} /^> /{if(!i) print NR": "$0}' "$f"
+```
+
+For (a), a tag missing from `tags.ts` is only acceptable when it reads the same
+in both languages (`Unity`, `C#`, `GPU`). Otherwise add a row — see section 7.
+
+For (c), read every line it prints. A wrapped line that happens to begin with
+`>` renders as a blockquote: a menu path broken after `Other Settings` becomes
+a quote block. Rewrap it.
+
+### 6.2 The pair — run once both files exist
 
 ```bash
 for f in src/content/posts/<slug>.md src/content/posts/_en/<slug>.md; do
   printf '%-44s ' "$f"
-  printf 'CR:%s h2:%s h3:%s fences:%s rows:%s tags:%s links:%s slug:%s key:%s pub:%s lang:%s\n' \
+  printf 'CR:%s h2:%s h3:%s fences:%s rows:%s tags:%s refs:%s links:%s quotes:%s key:%s pub:%s lang:%s\n' \
     "$(grep -c $'\r' "$f")" \
     "$(grep -c '^## ' "$f")" \
     "$(grep -c '^### ' "$f")" \
     "$(grep -c '^```' "$f")" \
     "$(grep -c '^|' "$f")" \
     "$(sed -n '/^tags:/,/^description:/p' "$f" | grep -c '^  - ')" \
+    "$(grep -c '^- \[[^]]*\](http' "$f")" \
     "$(grep -o '](/posts/[^)]*)' "$f" | wc -l)" \
-    "$(grep -c '^slug:' "$f")" \
+    "$(awk 'BEGIN{i=0;p=0;c=0} /^```/{i=!i} {if(!i && /^> /){if(!p)c++;p=1} else p=0} END{print c}' "$f")" \
     "$(grep '^translationKey:' "$f" | cut -d' ' -f2)" \
     "$(grep '^pubDatetime:' "$f" | cut -d' ' -f2)" \
     "$(grep '^lang:' "$f" | cut -d' ' -f2)"
 done
 ```
 
-Expected: `CR:0`, `slug:0`, matching `key` and `pub`, `lang` differing, and
-**every other count identical between the two files**.
+Expected: `key` and `pub` identical, `lang` differing, and **every count
+identical between the two rows**.
 
-Also check by eye:
+A mismatch is a real difference, not a formatting quirk — a table row dropped,
+a code block not carried over, a reference link forgotten. Find which one and
+fix the file, rather than adjusting the count.
 
-- No line outside a fenced code block starts with `> ` unless it is a real
-  blockquote. A wrapped line beginning with `>` (e.g. a menu path broken after
-  `Other Settings`) renders as a blockquote — rewrap it.
-- Internal link targets exist in both `posts/` and `posts/_en/`.
-- Every reference link resolves.
+### 6.3 The build — before anything is pushed
+
+`pnpm build` has to pass. Rule 1 in section 2 explains why `astro check` is not
+enough. **Give the user the command and let them run it** (section 2, rule 3);
+report what to look for rather than running the push yourself.
+
+If the build fails on a post, the usual causes are an unclosed code fence, a
+front-matter value that isn't valid YAML (an unescaped `:` inside an unquoted
+`title` or `description`), or an internal link to a slug that doesn't exist.
 
 ---
 
