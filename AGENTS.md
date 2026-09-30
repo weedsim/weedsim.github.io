@@ -176,6 +176,13 @@ labels, and the prose differ.
   something the current post needs. Repeat the explanation and repeat the
   example code, even verbatim, rather than linking around it. Links are for
   "see also", never as a substitute for content.
+- **When a post continues an earlier one, link it and add a layer.** The same
+  topic coming round again is normal here. Link the earlier post, and make this
+  one go further than it did — a different aspect, a mechanism one level down, a
+  question the earlier post left open. **This does not relax the rule above:**
+  the link marks where more depth lives, it never stands in for an explanation
+  this post needs. If a post would be the earlier one plus a link, there is no
+  post.
 - **Quote sources verbatim** in blockquotes, and attribute each one.
 - **Don't overstate.** If the documentation does not answer a question, write
   that it does not.
