@@ -32,6 +32,8 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   sound: { ko: "사운드", en: "Sound" },
   assetStore: { ko: "에셋스토어", en: "Asset Store" },
   editor: { ko: "에디터", en: "Editor" },
+  assembly: { ko: "어셈블리", en: "Assembly" },
+  compilation: { ko: "컴파일", en: "Compilation" },
   container: { ko: "컨테이너", en: "Container" },
   infrastructure: { ko: "인프라", en: "Infrastructure" },
   versionControl: { ko: "버전 관리", en: "Version Control" },
