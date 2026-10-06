@@ -42,6 +42,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   multithreading: { ko: "멀티스레딩", en: "Multithreading" },
   reinforcementLearning: { ko: "강화학습", en: "Reinforcement Learning" },
   encoding: { ko: "인코딩", en: "Encoding" },
+  markdown: { ko: "마크다운", en: "Markdown" },
   unicode: { ko: "유니코드", en: "Unicode" },
   hangul: { ko: "한글", en: "Hangul" },
   serialization: { ko: "직렬화", en: "Serialization" },
