@@ -32,6 +32,43 @@ pnpm run format:check
 pnpm run build
 ```
 
+### Working directory
+
+Every command in this file **assumes the repository root is the working
+directory.** All the relative paths (`src/content/posts/...`) stand on that.
+Land there first.
+
+The repo root is `D:\GitHub\weedsim.github.io`. How that path is spelled
+depends on the shell.
+
+**How you cross drives differs per shell, and this file does not prescribe
+it.** However you got there, one block decides it.
+
+```bash
+pwd
+[ -d src/content/posts ] && [ -f astro.config.ts ] \
+  && echo "repo root OK" || echo "not the repo root — cd first"
+```
+
+If `repo root OK` does not print, **do not start.** Do not guess shell
+syntax — ask the user how their shell crosses drives.
+
+> An earlier revision claimed `cmd.exe` crosses drives with `cd /d <path>`.
+> **That was unverified and did not work in the user's environment.** What
+> the user actually uses is `cd d:`. Shell behavior does not go in this file
+> unchecked (section 2, rule 6).
+
+**Run from anywhere else and it fails quietly.** These symptoms were run and
+observed in this container:
+
+| Block | From the wrong directory |
+|---|---|
+| 3.2 step 6 `ls -l` | `No such file or directory` — **fails loudly** |
+| 3.2 step 7 | **prints `CR:0`** — a missing file looks like a pass |
+| 6.1 `printf` | fields come out **empty** (`CR:[] h2:[]`) |
+
+That is why the step 7 block carries an existence check.
+
 ### Things not to change
 
 - **Do not turn off pnpm's `verifyDepsBeforeRun`.**
@@ -66,7 +103,9 @@ pnpm run build
    address. Never put a personal email address in a commit, in a file, or
    anywhere on the site.
 6. **Never guess package facts.** Version numbers, API names, defaults — look
-   them up in the official docs and quote them.
+   them up in the official docs and quote them. **The same goes for shell and
+   OS behavior.** If you cannot run it here, it does not go in as fact — give
+   the path and let a check block decide (section 1, *Working directory*).
 7. **Say the part you disagree with.** If the user's instruction or a source
    article is wrong, say so plainly instead of complying quietly.
 
@@ -102,11 +141,12 @@ that dropping one and carrying on to the end leaves the user no way to notice.
 5. **Verify every claim** against a primary source — the vendor's own docs,
    the package changelog, the API reference. Quote verbatim in a blockquote.
    Where the docs do not state something, **say that they do not** rather than
-   asserting it.
-6. **Write the Korean post** to `src/content/posts/<ascii-slug>.md`.
-7. **Run the single-file check** (section 6.1), then hand the file to the user
-   and commit it. Do this *before* asking anything. The pair check does not
-   apply yet — the English file does not exist.
+   asserting it. **Table the links you opened — section 3.2.**
+6. **Write the Korean post** to `src/content/posts/<ascii-slug>.md`, then
+   **read it back per section 3.2** to prove the file exists.
+7. **Run the single-file check (6.1) and the line-ending log (3.2)**, then
+   hand the file to the user and commit it. Do this *before* asking anything.
+   The pair check does not apply yet — the English file does not exist.
 8. **Ask two questions, confirm one thing, and wait.** Never ask about tags
    empty-handed — propose a set, then let the user decide.
    - **계기** — why did the user actually save this clipping? Never invent it.
@@ -143,7 +183,8 @@ that dropping one and carrying on to the end leaves the user no way to notice.
 **Every step leaves evidence.** A step whose evidence you cannot produce **did
 not run** — do not mark it done, go back and do it. Where the evidence is
 command output, **paste the output as-is; do not summarize it.** A summary can
-be invented; output is harder to invent.
+be invented; output is harder to invent. Steps 5, 6 and 7 have a fixed log
+format — follow **section 3.2** exactly.
 
 | Step | Evidence |
 |---|---|
@@ -151,9 +192,9 @@ be invented; output is harder to invent.
 | 2 clipping | filename · line count · its `source` URL · author · date |
 | 3 overlap | slugs of the existing posts **actually opened** (or "none") |
 | 4 angle | one sentence: which claim, number or label it goes after |
-| 5 verify | primary-source URLs opened + **URLs that failed, and why** |
-| 6 Korean | file path + byte size + **why that filename and title** (4.1) |
-| 7 single check | the 6.1 `printf` line as-is + the (a)(b)(c) results |
+| 5 verify | the 3.2 link table as-is, versions checked and failures included |
+| 6 Korean | the 3.2 read-back output as-is + why that filename and title (4.1) |
+| 7 single check | the 6.1 line + the 3.2 line-ending log as-is + (a)(b)(c) |
 | 8 questions | both questions + the four tag items + filename/title confirm |
 | 9 apply | which sections changed; say "rewritten" if it was rewritten |
 | 10 English | file path + byte size |
@@ -170,6 +211,107 @@ When printing it, **add a `status` column** with one of `done` / `incomplete` /
 re-issue that step is the entire point of the table.
 
 This is not a request to narrate every step. It is one table, twice.
+
+### 3.2 Execution logs for steps 5, 6 and 7
+
+**A tool reporting success is not evidence.** A write tool can return OK and
+leave no file. Confirm the result with **a separate read call, not the reply
+to the call that wrote it.** That is why these three steps emit their own log.
+
+The commands below **need bash** (so does every check in section 6). They use
+`[ -f ... ]`, `$'\r'`, `tr`, `wc` and `od`, so **they do not run in a non-bash
+shell.** On Windows, Git Bash works. And run them **from the repository
+root** — section 1, *Working directory*. The relative paths depend on it.
+
+#### Step 5 — table the links you actually opened
+
+Do not stop at a summary of the search results. List **the URLs you opened.**
+
+| What it confirmed | URL | Result |
+|---|---|---|
+| one line on what that page established | the full URL | `200` / `404` / `robots-blocked` / `403` |
+
+- **Separate links you merely found from links you opened.** If you did not
+  open it, write `search result only`. Summarizing without opening is not
+  verification.
+- **List the URLs that failed, too** — and whether it was 404, robots or 403.
+  Leaving them out costs the user the chance to ask "and that page?"
+- **For versioned docs, list every version you checked**, and read **the
+  scripting reference and the manual as a pair.** A post once declared an API
+  current off two reference versions while missing a restructured manual
+  section entirely.
+
+#### Step 6 — read the file back to prove it exists
+
+```bash
+f=src/content/posts/<slug>.md
+ls -l "$f" && wc -lc "$f" && head -20 "$f" && echo '--- tail ---' && tail -3 "$f"
+```
+
+The tool does not matter — `ls` and `cat`, a file-read tool, a glob search —
+as long as it is **a different call from the write.** Paste the output as-is,
+and check:
+
+- **Does the file appear in the listing?** If not, **the write failed.** Write
+  it again.
+- **Is the path right?** Not `_en/`, not a temporary output folder.
+- **Is the byte count plausible** — not 0, not a few hundred? That is a
+  truncated write.
+- **Does `head` reach the end of the front matter?** The `description` line
+  and the closing `---` must both be visible. Raise `-20` if tags push them
+  out of view.
+- **Does `tail` end on a finished paragraph?** Cut off mid-sentence means a
+  truncated file.
+
+#### Step 7 — emit the line-ending log
+
+This repo is **LF regardless of the operating system.** `.gitattributes` sets
+`* text=auto eol=lf`, so even the checkout is LF. The only files stored CRLF
+are `*.bat` and `*.cmd`, and posts are `.md`. **Writing from Windows is not a
+reason to use CRLF.**
+
+```bash
+f=src/content/posts/<slug>.md
+if [ ! -f "$f" ]; then
+  echo "!! no such file: $f — cd first, section 1"
+else
+  file "$f"
+  printf 'CR:%s lines:%s bytes:%s lastbyte:%s\n' \
+    "$(tr -cd '\r' < "$f" | wc -c)" "$(wc -l < "$f")" "$(wc -c < "$f")" \
+    "$(tail -c1 "$f" | od -An -c | tr -d ' ')"
+  grep -n $'\r' "$f" | head -3 | cat -A
+fi
+```
+
+The `if` is not decoration. **Run `tr -cd '\r' < "$f" | wc -c` on a file that
+does not exist and only the redirect fails — the pipe still runs and prints
+`CR:0`.** It looks like a pass. Check before you enter.
+
+Expected:
+
+- **`CR:0`.** This is the real verdict; anything else is the number of CRLF
+  lines. It uses only `tr` and `wc`, so it runs anywhere.
+- `file` output must **not** carry **`with CRLF line terminators`**. The part
+  before it varies by `file` version — `ASCII text`, `UTF-8 Unicode text`,
+  `Unicode text, UTF-8 text` — so do not judge on that wording. The only
+  thing being looked at is whether `CRLF` appears. **`file` may not exist at
+  all** (it is not always in a default Git Bash install); if it is missing,
+  skip that line and judge on `CR:`.
+- **`lastbyte:\n`.** Any other value means the final newline is missing.
+- The last `grep` must print **nothing.** If it does, it names the lines
+  carrying `^M$`.
+
+If a CR shows up, **fix it and run the log again.** Do not just report it.
+
+```bash
+sed -i 's/\r$//' "$f"
+```
+
+`.gitattributes` normalizes to LF at `git add` time, so **the committed blob
+is fine — which means git hides this.** That is exactly why the check reads
+**the working file** before the commit, and why the log gets pasted. Left
+alone, a `\r` leaks into the `cut` and `grep` results in sections 6.1 and
+6.2 and throws the ko/en comparison off.
 
 ---
 
@@ -369,6 +511,9 @@ printf 'CR:%s h2:%s h3:%s fences:%s rows:%s tags:%s refs:%s links:%s slug:%s quo
 
 What this file must satisfy on its own:
 
+- **No field is empty.** An empty field like `CR:[]` is not zero — it means
+  **the file was not read.** Check the path and the working directory
+  (section 1).
 - **`CR:0`** — the repo is LF only.
 - **`slug:0`** — there is no `slug` front-matter field.
 - **`fences` is even.** An odd count means an unclosed code block, which
