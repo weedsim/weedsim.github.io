@@ -104,9 +104,25 @@ user's motivation wastes a whole post.
 7. **Run the single-file check** (section 6.1), then hand the file to the user
    and commit it. Do this *before* asking anything. The pair check does not
    apply yet — the English file does not exist.
-8. **Ask two questions and wait:**
+8. **Ask two questions and wait.** Never ask about tags empty-handed —
+   propose a set, then let the user decide.
    - **계기** — why did the user actually save this clipping? Never invent it.
-   - **태그** — the tag list, and whether `src/i18n/tags.ts` needs a new row.
+     If you have a guess, put it as "this is how it looks — right?" and only
+     get it confirmed.
+   - **태그** — present the provisional tags already in the post **as a
+     recommendation**, and hand these over with it:
+     1. **One line per tag** saying why it belongs on this post.
+     2. Each tag's status against `src/i18n/tags.ts` — **already there** /
+        **deliberately locale-neutral** (section 7) / **needs a new row**. If
+        a row is needed, propose the `ko`/`en` pair as well.
+     3. **The tag set of any earlier post on the same topic**, so the cluster
+        stays consistent. If it drifts, a reader cannot follow the series by
+        tag.
+     4. **At least one candidate to drop.** Tags only ever err upward; a vague
+        one left in grows the dictionary for nothing.
+     Then **ask explicitly whether to keep it as is, drop something, or swap
+     something.** A recommendation is only that; nothing is settled until the
+     user answers, and `tags.ts` stays untouched until then.
 9. **Apply the answers.** If the motivation changes what the post is about,
    rewrite it rather than patching the intro.
 10. **Write the English post** to `src/content/posts/_en/<same-slug>.md`.
