@@ -140,9 +140,49 @@ The post's complaint:
 | `BackgroundThreadAsync` | Moves to a ThreadPool background thread |
 | `FromAsyncOperation` | Creates an `Awaitable` from an existing `AsyncOperation` |
 
-**Not one combinator.** And the same list in the 2023.1 docs is **also seven.**
-Meaning no static member has been added since it was introduced, and the
-complaint the post wrote in 2025 holds unchanged.
+**Not one combinator.** And **the lists in all four versions — 2023.1, 6.2, 6.3
+and 6.4 — are the same.** No static member has been added since it was
+introduced. Open the `Awaitable.WhenAll` page directly and it's a **404** as well.
+The complaint the post wrote in 2025 holds unchanged.
+
+**But the docs write down an answer to this gap separately.** The manual's
+[Awaitable code example reference](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-examples.html)
+carries one extension class.
+
+```csharp
+using System.Threading.Tasks;
+using UnityEngine;
+
+public static class AwaitableExtensions
+{
+    public static async Task AsTask(this Awaitable a)
+    {
+        await a;
+    }
+
+    public static async Task<T> AsTask<T>(this Awaitable<T> a)
+    {
+        return await a;
+    }
+}
+```
+
+**It's the path for wrapping an `Awaitable` as a `Task`.** With that,
+`Task.WhenAll` and `Task.WhenAny` can be used directly.
+
+```csharp
+await Task.WhenAll(LoadStageAsync().AsTask(),
+                   LoadAudioAsync().AsTask());
+
+Task finished = await Task.WhenAny(TimeoutAsync().AsTask(),
+                                   LoadStageAsync().AsTask());
+```
+
+**This is the only documented route that solves `WhenAny` too.** The post closes
+on "you have to build it using UniTask or classic coroutines," but a way to cross
+to the `Task` side without an external library is in the official examples. The
+cost is clear — the moment you wrap in a `Task`, you **give up `Awaitable`'s
+pooling and synchronous continuation at that point.**
 
 The post saying "the current features are nearly all of what's in the simple
 example code above" is nearly right too. But three things are missing from that
@@ -152,7 +192,7 @@ example code, and two of them fill the gaps the post wishes about.
 
 `IsCompleted`, `Cancel` and `FromAsyncOperation`.
 
-### Two Cancellation Models, and the Docs Call Them Equivalent
+### There Are Three Cancellation Models
 
 The post's cancellation section covers only `destroyCancellationToken`. That's
 the pass-a-token-to-the-method approach, and the explanation is accurate. But
@@ -170,6 +210,33 @@ And the docs pin down how the two relate.
 when an already-started operation has to be cut from outside — hold the instance
 and call `Cancel()`. The exception the receiving side gets is the same
 `OperationCanceledException`, so the `catch` code doesn't change.
+
+And there's a third, **the spot that bites most often in the editor.** The
+manual's continuation section states:
+
+> Unity **doesn't automatically stop** code running in the background when you
+> exit Play mode. To cancel a background operation on exiting Play mode, use
+> `Application.exitCancellationToken`.
+
+That token's own description gives its scope.
+
+> Cancellation token raised on **exiting Play mode (Editor)** or on **quitting
+> the application** (Read Only).
+
+**It covers both stopping Play in the editor and a built app quitting.**
+
+The post's `destroyCancellationToken` is the token that cuts **when that object is
+destroyed**, and stopping Play is a different event. Work not attached to a scene
+object — exactly the **"work not tied to a GameObject"** the post lists as
+`Awaitable`'s advantage — **keeps running after you stop the editor** without this
+token. The same shape as the advantage-is-responsibility point elsewhere in this
+post.
+
+| Token / method | The event it cuts on |
+| --- | --- |
+| `destroyCancellationToken` | When that `MonoBehaviour` is destroyed |
+| `Application.exitCancellationToken` | On exiting Play mode, or when the app quits |
+| `Awaitable.Cancel()` | When I call it |
 
 ```csharp
 private Awaitable _running;
@@ -216,9 +283,35 @@ public static Awaitable FromAsyncOperation(AsyncOperation op,
 
 > Creates an Awaitable from an existing AsyncOperation object.
 
-**It wraps an existing `AsyncOperation` as an `Awaitable`.**
+**It wraps an existing `AsyncOperation` as an `Awaitable`.** But to get the order
+right, an `AsyncOperation` **is awaitable without being wrapped.** Its own docs
+say so.
+
+> **Await its completion with the `await` key word** as part of Unity's
+> Awaitable support.
+
+The manual's code example is that shape too.
+
+```csharp
+public async Awaitable LoadResourcesAsync()
+{
+    var operation = Resources.LoadAsync("my-texture");
+    await operation;                      // not wrapped
+    var texture = operation.asset as Texture2D;
+}
+```
+
+**So why does `FromAsyncOperation` exist?** Look at the declaration again and the
+second parameter is a `CancellationToken`. Awaiting directly leaves nowhere to
+slot a token in. **This is the form for when cancellation is needed.**
+
+```csharp
+// Wrap it when you need a token
+await Awaitable.FromAsyncOperation(Resources.LoadAsync("my-texture"), _destroyToken);
+```
+
 `SceneManager.LoadSceneAsync`, `Resources.LoadAsync` and Unity APIs returning an
-`AsyncOperation` generally come in through here.
+`AsyncOperation` come in through either form.
 
 This meshes with another of the post's sections. In the background-thread section
 it warns:
@@ -278,6 +371,29 @@ make** shows up.
 stepping over the constraint, and `Thread.Sleep` is right there — which is
 exactly what the post's example does. **The example is correct and the reason
 isn't written down.**
+
+The general rule is in the manual as a pair too.
+
+> If the method is called from the main thread, it resumes on the main thread.
+> Otherwise it resumes on a .NET `ThreadPool` thread.
+
+**It comes back to where it was called**, with `MainThreadAsync` and
+`BackgroundThreadAsync` as the exceptions. So the same section adds one cost.
+
+> It's most efficient to call `await Awaitable.MainThreadAsync()` from the main
+> thread and `await Awaitable.BackgroundThreadAsync()` from a background thread
+> because in each case the code **resumes immediately** on completion.
+
+Conversely, coming back from a background thread to the main one **can't resume
+until the next frame update.** The `MainThreadAsync()` in the post's example is
+that case, and a frame is the cost. After heavy work a frame doesn't matter, but
+a structure that hops threads often accumulates it.
+
+There's a warning about threads themselves as well.
+
+> While Unity doesn't prevent execution of multithreaded code in these contexts,
+> **crashes and other unpredictable errors are likely** if you do use multiple
+> threads.
 
 The "ThreadPool background thread" part is worth reading too. The
 `Thread.Sleep(5000)` the post does **occupies one of that pool's threads for five
@@ -396,12 +512,38 @@ The mapping is nearly one to one per wait type.
 | `yield return new WaitForEndOfFrame()` | `await Awaitable.EndOfFrameAsync()` |
 | `yield return new WaitForFixedUpdate()` | `await Awaitable.FixedUpdateAsync()` |
 | `yield return new WaitForSeconds(1f)` | `await Awaitable.WaitForSecondsAsync(1f)` |
-| `yield return asyncOperation` | `await Awaitable.FromAsyncOperation(op, token)` |
+| `yield return asyncOperation` | `await operation` (`FromAsyncOperation` if you need a token) |
+| `yield return new WaitUntil(cond)` | Build it — see below |
 | `yield break` | `return` |
 | `StopCoroutine` | Token cancellation or `Cancel()` |
 
 What stands out is that nothing corresponds to `WaitForSecondsRealtime`. If you
 need a wait that ignores the time scale, that one you build yourself.
+
+For `WaitUntil`, the manual writes down the pattern.
+
+```csharp
+public static async Awaitable AwaitableUntil(Func<bool> condition,
+    CancellationToken cancellationToken)
+{
+    while (!condition())
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await Awaitable.NextFrameAsync();
+    }
+}
+```
+
+**It checks the condition every frame**, the same structure as a coroutine's
+`WaitUntil`. What differs is that there's a place for a token.
+
+There's a line about mixing the two as well.
+
+> You can safely `yield return` an `Awaitable` from a traditional iterator-based
+> coroutine, but **you can't `yield return` an `Awaitable<T0>`**.
+
+**Inside a coroutine, an `Awaitable` can be awaited and an `Awaitable<T>`
+can't.** It snags where the two mix during an incremental migration.
 
 The ported shape looks like this — a trap that rearms after a set time.
 
@@ -498,10 +640,28 @@ failures have to be handled as a set, catching inside each method and taking the
 result back as something like `Awaitable<bool>` is better.
 
 There's no building a `WhenAny` equivalent this way. You'd need to know which
-finished first, and `await` fixes the order. If that scenario is needed, using
-UniTask or `Task` is right, as the post says — the code in
-[the post on TcpListener](/posts/tcplistener-accepttcpclient/) is on the `Task`
-and token side.
+finished first, and `await` fixes the order. For that, cross over with **the
+docs' `AsTask()`** seen earlier.
+
+```csharp
+private async Awaitable LoadWithTimeoutAsync()
+{
+    Task load = LoadStageAsync().AsTask();
+    Task timeout = Awaitable.WaitForSecondsAsync(10f).AsTask();
+
+    Task finished = await Task.WhenAny(load, timeout);
+
+    if (finished == timeout)
+    {
+        Debug.LogWarning("loading passed 10 seconds");
+    }
+}
+```
+
+Wrapping in a `Task` gives up pooling and synchronous continuation, so **use it
+where something runs rarely, like loading, not in code that runs every frame.**
+Code using `Task` and tokens is in
+[the post on TcpListener](/posts/tcplistener-accepttcpclient/).
 
 ### Where Not to Use It
 
@@ -520,6 +680,11 @@ and token side.
   caching before destruction. Take it into a local.
 - **Expecting it to stop by itself along with the GameObject's lifetime.** That's
   a coroutine's property and `Awaitable` doesn't have it. Pass a token.
+- **Expecting it to end when you stop Play mode.** The docs say it doesn't stop
+  automatically. For work not tied to a scene, pass
+  `Application.exitCancellationToken`.
+- **Going through `FromAsyncOperation` just to await an `AsyncOperation`.** It
+  awaits as-is. That method is for when you need a token.
 
 ## Wrapping Up
 
@@ -529,21 +694,35 @@ and token side.
 - **`GetAwaiter` isn't something you "can't" do — it's undocumented.** The post's
   example calls it. It can be called and the result isn't guaranteed, and the
   reason is the **pooling** the docs state.
-- **`WhenAll` and `WhenAny` are still absent.** Seven current static methods, the
-  same list as 2023.1. The post's complaint holds unchanged.
-- **Three members are missing from the post.** `Cancel` is a second cancellation
-  model the docs call **equivalent** to the token, `FromAsyncOperation` is the
-  path to awaiting an `AsyncOperation`, and `IsCompleted` is for polling. The
-  first two fill the gaps the post wishes about.
+- **`WhenAll` and `WhenAny` are still absent.** Seven current static methods, and
+  the 2023.1, 6.2, 6.3 and 6.4 lists are all the same. The `Awaitable.WhenAll`
+  page is a 404.
+- **But the docs write down the path over to `Task`.** Wrap with the manual
+  example's `AsTask()` extension and `Task.WhenAll` / `Task.WhenAny` work. The
+  cost is **giving up pooling and synchronous continuation** at that point.
+- **Three members are missing from the post.** `Cancel` is a cancellation model
+  the docs call **equivalent** to the token, `FromAsyncOperation` is the form that
+  slots a token into an `AsyncOperation`, and `IsCompleted` is for polling.
+- **An `AsyncOperation` awaits without being wrapped.** So `FromAsyncOperation`
+  exists not to "make it awaitable" but **to slot a token in**.
+- **There are three cancellation paths.** Destruction
+  (`destroyCancellationToken`), Play mode exit or app quit
+  (`Application.exitCancellationToken`), and manual (`Cancel()`). **Stopping Play
+  doesn't stop background code** is the docs' warning, and it's the one absent
+  from the post.
 - **The four frame and time waits are main-thread only.** The docs say "can only
   be called from the main thread." They can't be used after crossing to the
   background, and that's why the post's example uses `Thread.Sleep`.
+- **Coming back from background to main costs a frame.** The docs say the
+  opposite direction resumes immediately. Hopping threads often accumulates it.
 - **`destroyCancellationToken` must be cached before destruction.** A docs
   requirement, met by avoiding the re-read-after-`await` shape.
 - **The four coroutine comparisons all hold.** To add: unlike `SetActive(false)`
   stopping coroutines, `Awaitable` keeps flowing. **The advantage of not being
   tied to a GameObject is exactly the responsibility of having to stop it
   yourself.**
+- **Inside a coroutine an `Awaitable` can be `yield return`ed and an
+  `Awaitable<T>` can't.** It snags mid-migration.
 
 ---
 
@@ -556,12 +735,20 @@ and token side.
 - [Awaitable.NextFrameAsync](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/Awaitable.NextFrameAsync.html) ·
   [Awaitable.WaitForSecondsAsync](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/Awaitable.WaitForSecondsAsync.html) ·
   [Awaitable.BackgroundThreadAsync](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/Awaitable.BackgroundThreadAsync.html)
-- [MonoBehaviour.destroyCancellationToken — Unity Scripting Reference](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MonoBehaviour-destroyCancellationToken.html)
+- [Introduction to Awaitable — Unity Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-introduction.html) ·
+  [Completion and continuation](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-continuations.html) ·
+  [Code example reference](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-examples.html)
+- [MonoBehaviour.destroyCancellationToken — Unity Scripting Reference](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MonoBehaviour-destroyCancellationToken.html) ·
+  [Application.exitCancellationToken](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Application-exitCancellationToken.html)
+- [AsyncOperation — Unity Scripting Reference](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/AsyncOperation.html)
 - [Compiler error CS0815 — C# reference](https://learn.microsoft.com/en-us/dotnet/csharp/misc/cs0815)
 
 The starting point for this post was
 [leffe. — 유니티 6 Awaitable 소개](https://tearsinrain.tistory.com/21)
 (2025-03-20). The three ways `Awaitable` differs from `Task` were covered first in
 [the post on Unity's code optimization doc](/posts/unity-code-optimization/); this
-one cross-checked the **using** side against the current Scripting Reference. The
-check date is 2026-10-07.
+one cross-checked the **using** side. The static member list was identical across
+**four versions — 2023.1, 6.2, 6.3 and 6.4** — and the `Awaitable.WhenAll` page
+was a 404. `AsTask()`, `Application.exitCancellationToken` and the `yield return`
+restriction were confirmed in the manual's three Awaitable sections. The check
+date is 2026-10-07.

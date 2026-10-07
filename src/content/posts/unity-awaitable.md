@@ -126,9 +126,49 @@ await awaitable;        // 여기가 '안 되는' 자리
 | `BackgroundThreadAsync` | 스레드풀 백그라운드 스레드로 넘어간다 |
 | `FromAsyncOperation` | 기존 `AsyncOperation`에서 `Awaitable`을 만든다 |
 
-**조합 메서드가 하나도 없다.** 그리고 2023.1 문서의 같은 목록도 **똑같이 일곱
-개**다. 도입 이후 정적 멤버가 늘지 않았다는 뜻이고, 글이 2025년에 적은 불만이
-그대로 유지되고 있다.
+**조합 메서드가 하나도 없다.** 그리고 **2023.1, 6.2, 6.3, 6.4 네 판본의 목록이
+모두 같다.** 도입 이후 정적 멤버가 늘지 않았다는 뜻이다. `Awaitable.WhenAll`
+페이지를 직접 열어보면 **404**이기도 하다. 글이 2025년에 적은 불만이 그대로
+유지되고 있다.
+
+**그런데 문서는 이 공백에 대한 답을 따로 적어둔다.** 매뉴얼의
+[Awaitable 코드 예제](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-examples.html)
+절에 확장 메서드 하나가 실려 있다.
+
+```csharp
+using System.Threading.Tasks;
+using UnityEngine;
+
+public static class AwaitableExtensions
+{
+    public static async Task AsTask(this Awaitable a)
+    {
+        await a;
+    }
+
+    public static async Task<T> AsTask<T>(this Awaitable<T> a)
+    {
+        return await a;
+    }
+}
+```
+
+**`Awaitable`을 `Task`로 감싸는 길이다.** 이러면 `Task.WhenAll`과
+`Task.WhenAny`를 그대로 쓸 수 있다.
+
+```csharp
+await Task.WhenAll(LoadStageAsync().AsTask(),
+                   LoadAudioAsync().AsTask());
+
+Task finished = await Task.WhenAny(TimeoutAsync().AsTask(),
+                                   LoadStageAsync().AsTask());
+```
+
+**이게 `WhenAny`까지 해결하는 유일한 문서화된 경로다.** 글은 "UniTask나 고전적인
+코루틴을 사용하는 방식으로 만들어야 한다"로 맺는데, 외부 라이브러리 없이
+`Task` 쪽으로 건너가는 방법이 공식 예제에 있다. 대가는 분명하다 — `Task`로
+감싸는 순간 `Awaitable`의 이점인 **풀링과 동기적 연속 실행을 그 지점에서
+포기한다.**
 
 글이 "현재 기능은 위의 간단한 예시 코드에 있는 것들이 거의 전부"라고 한 것도
 거의 맞다. 다만 그 예시 코드에 없는 게 셋 있는데, 그중 둘이 글이 아쉬워한
@@ -138,7 +178,7 @@ await awaitable;        // 여기가 '안 되는' 자리
 
 `IsCompleted`, `Cancel`, `FromAsyncOperation`이다.
 
-### 취소 모델이 둘이고 문서는 동등하다고 적는다
+### 취소 모델이 셋이다
 
 글의 취소 절은 `destroyCancellationToken` 하나만 다룬다. 토큰을 메서드에
 넘기는 방식이고, 정확한 설명이다. 그런데 `Awaitable`에는 인스턴스 메서드가
@@ -156,6 +196,32 @@ await awaitable;        // 여기가 '안 되는' 자리
 바깥에서 끊어야 할 때 — 에는 인스턴스를 들고 있다가 `Cancel()`을 부르면 된다.
 받는 쪽의 예외는 같은 `OperationCanceledException`이라 `catch` 코드가 달라지지
 않는다.
+
+그리고 셋째가 있는데, **에디터에서 가장 자주 물리는 자리**다. 매뉴얼의 연속
+실행 절이 적는다.
+
+> Unity **doesn't automatically stop** code running in the background when you
+> exit Play mode. To cancel a background operation on exiting Play mode, use
+> `Application.exitCancellationToken`.
+
+이 토큰의 설명이 적용 범위를 적는다.
+
+> Cancellation token raised on **exiting Play mode (Editor)** or on **quitting
+> the application** (Read Only).
+
+**에디터의 플레이 중지와 빌드된 앱의 종료를 둘 다 덮는다.**
+
+글의 `destroyCancellationToken`은 **그 오브젝트가 파괴될 때** 끊어주는 토큰이고,
+플레이 중지는 그것과 다른 사건이다. 씬 오브젝트에 붙지 않은 작업 — 글이
+`Awaitable`의 장점으로 든 바로 그 **"GameObject에 묶이지 않은 작업"** — 은 이쪽
+토큰이 없으면 **에디터를 멈춘 뒤에도 계속 돈다.** 장점이 곧 책임이라는 이 글의
+다른 자리와 같은 모양이다.
+
+| 토큰·메서드 | 끊는 사건 |
+| --- | --- |
+| `destroyCancellationToken` | 그 `MonoBehaviour`가 파괴될 때 |
+| `Application.exitCancellationToken` | 플레이 모드를 나갈 때, 또는 앱이 종료될 때 |
+| `Awaitable.Cancel()` | 내가 부를 때 |
 
 ```csharp
 private Awaitable _running;
@@ -202,9 +268,35 @@ public static Awaitable FromAsyncOperation(AsyncOperation op,
 
 > Creates an Awaitable from an existing AsyncOperation object.
 
-**기존 `AsyncOperation`을 `Awaitable`로 감싼다.** `SceneManager.LoadSceneAsync`,
-`Resources.LoadAsync`, 그리고 `AsyncOperation`을 돌려주는 Unity API 전반이
-여기로 들어온다.
+**기존 `AsyncOperation`을 `Awaitable`로 감싼다.** 다만 순서를 정확히 적어두면,
+`AsyncOperation`은 **감싸지 않아도 그냥 `await`된다.** `AsyncOperation` 문서가
+그렇게 적는다.
+
+> **Await its completion with the `await` key word** as part of Unity's
+> Awaitable support.
+
+매뉴얼의 코드 예제도 그 형태다.
+
+```csharp
+public async Awaitable LoadResourcesAsync()
+{
+    var operation = Resources.LoadAsync("my-texture");
+    await operation;                      // 감싸지 않는다
+    var texture = operation.asset as Texture2D;
+}
+```
+
+**그러면 `FromAsyncOperation`은 왜 있나.** 선언을 다시 보면 두 번째 인자가
+`CancellationToken`이다. 직접 `await`하는 형태에는 토큰을 끼울 자리가 없다.
+**취소가 필요할 때 쓰는 형태**가 이쪽이다.
+
+```csharp
+// 토큰이 필요하면 감싼다
+await Awaitable.FromAsyncOperation(Resources.LoadAsync("my-texture"), _destroyToken);
+```
+
+`SceneManager.LoadSceneAsync`, `Resources.LoadAsync`, 그리고 `AsyncOperation`을
+돌려주는 Unity API 전반이 두 형태 모두에 들어온다.
 
 이게 글의 다른 절과 맞물린다. 글은 백그라운드 스레드 절에서 이렇게 경고한다.
 
@@ -255,6 +347,29 @@ Debug.Log("메인 스레드로 복귀");
 "1초 쉬자"고 `WaitForSecondsAsync`를 부르면 제약을 넘는 것이고, 거기서는
 `Thread.Sleep`이 맞다 — 글의 예제가 실제로 그렇게 쓰고 있다. **예제는 맞고
 이유가 적혀 있지 않다.**
+
+일반 규칙도 매뉴얼에 한 쌍으로 적혀 있다.
+
+> If the method is called from the main thread, it resumes on the main thread.
+> Otherwise it resumes on a .NET `ThreadPool` thread.
+
+**부른 곳으로 돌아온다**는 것이고, `MainThreadAsync`·`BackgroundThreadAsync`가
+그 예외다. 그래서 같은 절이 비용 하나를 덧붙인다.
+
+> It's most efficient to call `await Awaitable.MainThreadAsync()` from the main
+> thread and `await Awaitable.BackgroundThreadAsync()` from a background thread
+> because in each case the code **resumes immediately** on completion.
+
+반대로 백그라운드에서 메인으로 돌아오는 경우는 **다음 프레임 업데이트까지
+재개되지 않는다.** 글의 예제가 하는 `MainThreadAsync()`가 그 경우이고, 한
+프레임이 비용으로 붙는다. 무거운 작업 뒤의 한 프레임이라 문제는 안 되지만,
+스레드를 자주 왕복하는 구조라면 그만큼 쌓인다.
+
+스레드 자체에 대한 경고도 있다.
+
+> While Unity doesn't prevent execution of multithreaded code in these contexts,
+> **crashes and other unpredictable errors are likely** if you do use multiple
+> threads.
 
 그리고 "스레드풀 백그라운드 스레드"라는 점도 읽어둘 값이 있다. 글이 한
 `Thread.Sleep(5000)`은 그 **풀의 스레드 하나를 5초 동안 점유한다.** 글이
@@ -368,12 +483,38 @@ GameObject가 사라져도 알아서 멈추지 않는다는 뜻이기도 하다.
 | `yield return new WaitForEndOfFrame()` | `await Awaitable.EndOfFrameAsync()` |
 | `yield return new WaitForFixedUpdate()` | `await Awaitable.FixedUpdateAsync()` |
 | `yield return new WaitForSeconds(1f)` | `await Awaitable.WaitForSecondsAsync(1f)` |
-| `yield return asyncOperation` | `await Awaitable.FromAsyncOperation(op, token)` |
+| `yield return asyncOperation` | `await operation` (토큰이 필요하면 `FromAsyncOperation`) |
+| `yield return new WaitUntil(cond)` | 직접 만든다 — 아래 참고 |
 | `yield break` | `return` |
 | `StopCoroutine` | 토큰 취소 또는 `Cancel()` |
 
 `WaitForSecondsRealtime`에 해당하는 것이 목록에 없다는 게 눈에 띈다. 시간
 배율을 무시하는 대기가 필요하면 그건 직접 만들어야 한다.
+
+`WaitUntil` 쪽은 매뉴얼이 패턴을 적어둔다.
+
+```csharp
+public static async Awaitable AwaitableUntil(Func<bool> condition,
+    CancellationToken cancellationToken)
+{
+    while (!condition())
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await Awaitable.NextFrameAsync();
+    }
+}
+```
+
+**매 프레임 조건을 보는 것**이라 코루틴의 `WaitUntil`과 같은 구조다. 다른 건
+토큰 자리가 있는 쪽이다.
+
+섞어 쓸 때의 제약도 한 줄 적혀 있다.
+
+> You can safely `yield return` an `Awaitable` from a traditional iterator-based
+> coroutine, but **you can't `yield return` an `Awaitable<T0>`**.
+
+**코루틴 안에서 `Awaitable`은 기다릴 수 있고 `Awaitable<T>`는 안 된다.** 점진적
+이행 중에 둘이 섞이는 자리에서 걸린다.
 
 옮긴 모양은 이렇게 된다. 함정이 일정 시간 뒤에 재무장하는 코드다.
 
@@ -468,10 +609,28 @@ private async Awaitable LoadAllAsync()
 `Awaitable<bool>` 같은 형태로 돌려받는 쪽이 낫다.
 
 `WhenAny`에 해당하는 것은 이 방식으로 만들 수 없다. 먼저 끝난 쪽을 알아야
-하는데 `await`가 순서를 고정하기 때문이다. 그 시나리오가 필요하면 글이
-말한 대로 UniTask나 `Task`를 쓰는 편이 맞다 —
-[TcpListener를 다룬 글](/posts/tcplistener-accepttcpclient/)의 코드가 `Task`와
-토큰을 쓰는 쪽이다.
+하는데 `await`가 순서를 고정하기 때문이다. 그때는 앞에서 본 **문서의 `AsTask()`**
+로 건너간다.
+
+```csharp
+private async Awaitable LoadWithTimeoutAsync()
+{
+    Task load = LoadStageAsync().AsTask();
+    Task timeout = Awaitable.WaitForSecondsAsync(10f).AsTask();
+
+    Task finished = await Task.WhenAny(load, timeout);
+
+    if (finished == timeout)
+    {
+        Debug.LogWarning("로딩이 10초를 넘었다");
+    }
+}
+```
+
+`Task`로 감싸는 순간 풀링과 동기적 연속 실행을 포기하는 것이므로, **매 프레임
+도는 코드가 아니라 로딩처럼 드물게 한 번 도는 자리에 쓴다.** `Task`와 토큰을
+쓰는 코드는 [TcpListener를 다룬 글](/posts/tcplistener-accepttcpclient/)에
+있다.
 
 ### 쓰지 말아야 할 자리
 
@@ -489,6 +648,11 @@ private async Awaitable LoadAllAsync()
   캐시를 요구한다. 지역 변수에 받아둔다.
 - **GameObject 수명에 맞춰 알아서 멈출 것으로 기대하는 것.** 코루틴의 성질이고
   `Awaitable`은 그러지 않는다. 토큰을 넘긴다.
+- **플레이 모드를 멈추면 끝날 것으로 기대하는 것.** 문서가 자동으로 멈추지
+  않는다고 적는다. 씬에 묶이지 않은 작업에는
+  `Application.exitCancellationToken`을 넘긴다.
+- **`AsyncOperation`을 기다리려고 `FromAsyncOperation`을 거치는 것.** 그냥
+  `await`된다. 그 메서드는 토큰이 필요할 때다.
 
 ## 정리
 
@@ -498,18 +662,31 @@ private async Awaitable LoadAllAsync()
 - **`GetAwaiter`는 "할 수 없는" 게 아니라 문서에 없다.** 글의 예제도 호출하고
   있다. 호출은 되고 결과가 보장되지 않으며, 이유는 문서가 적은 **풀링**이다.
 - **`WhenAll`·`WhenAny`는 지금도 없다.** 현행 정적 메서드가 일곱 개이고,
-  2023.1의 목록과 같다. 글의 불만이 그대로 유효하다.
-- **글에 없는 멤버가 셋이다.** `Cancel`은 토큰과 **동등한** 두 번째 취소
-  모델이고, `FromAsyncOperation`은 `AsyncOperation`을 기다리는 길이며,
-  `IsCompleted`는 폴링용이다. 앞의 둘이 글이 아쉬워한 자리를 메운다.
+  2023.1·6.2·6.3·6.4 목록이 모두 같다. `Awaitable.WhenAll` 페이지는 404다.
+- **다만 문서가 `Task`로 건너가는 길을 적어둔다.** 매뉴얼 예제의 `AsTask()`
+  확장 메서드로 감싸면 `Task.WhenAll`·`Task.WhenAny`를 쓸 수 있다. 대가는 그
+  지점에서 **풀링과 동기적 연속 실행을 포기하는 것**이다.
+- **글에 없는 멤버가 셋이다.** `Cancel`은 토큰과 **동등한** 취소 모델이고,
+  `FromAsyncOperation`은 `AsyncOperation`에 토큰을 끼우는 형태이며,
+  `IsCompleted`는 폴링용이다.
+- **`AsyncOperation`은 감싸지 않아도 `await`된다.** 그래서
+  `FromAsyncOperation`의 존재 이유는 "기다리게 하는 것"이 아니라 **토큰을 끼우는
+  것**이다.
+- **취소 경로가 셋이다.** 파괴(`destroyCancellationToken`), 플레이 모드 종료
+  (`Application.exitCancellationToken`), 수동(`Cancel()`)이다. **플레이를 멈춰도
+  백그라운드 코드는 안 멈춘다**는 게 문서의 경고이고, 글에 없는 쪽이다.
 - **프레임·시간 대기 넷은 메인 스레드 전용이다.** 문서가 "can only be called
   from the main thread"라고 적는다. 백그라운드로 넘어간 뒤에는 쓸 수 없고,
   글의 예제가 `Thread.Sleep`을 쓴 이유가 그것이다.
+- **백그라운드에서 메인으로 돌아오는 데는 한 프레임이 든다.** 반대 방향은 즉시
+  재개된다고 문서가 적는다. 스레드를 자주 왕복하면 그만큼 쌓인다.
 - **`destroyCancellationToken`은 파괴 전에 캐시해야 한다.** 문서의 요구이고,
   `await` 뒤에 다시 읽는 형태를 피하면 된다.
 - **코루틴과의 비교 네 가지는 다 맞는다.** 덧붙이면 `SetActive(false)`가
   코루틴을 멈추는 것과 달리 `Awaitable`은 계속 흐른다. **GameObject에 묶이지
   않는다는 장점이 곧 내가 끊어야 한다는 책임이다.**
+- **코루틴 안에서 `Awaitable`은 `yield return`되고 `Awaitable<T>`는 안 된다.**
+  점진적으로 옮기는 중에 걸리는 자리다.
 
 ---
 
@@ -522,12 +699,19 @@ private async Awaitable LoadAllAsync()
 - [Awaitable.NextFrameAsync](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/Awaitable.NextFrameAsync.html) ·
   [Awaitable.WaitForSecondsAsync](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/Awaitable.WaitForSecondsAsync.html) ·
   [Awaitable.BackgroundThreadAsync](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/Awaitable.BackgroundThreadAsync.html)
-- [MonoBehaviour.destroyCancellationToken — Unity 스크립팅 레퍼런스](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MonoBehaviour-destroyCancellationToken.html)
+- [Awaitable 소개 — Unity 매뉴얼](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-introduction.html) ·
+  [완료와 연속 실행](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-continuations.html) ·
+  [코드 예제](https://docs.unity3d.com/6000.3/Documentation/Manual/async-awaitable-examples.html)
+- [MonoBehaviour.destroyCancellationToken — Unity 스크립팅 레퍼런스](https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MonoBehaviour-destroyCancellationToken.html) ·
+  [Application.exitCancellationToken](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Application-exitCancellationToken.html)
+- [AsyncOperation — Unity 스크립팅 레퍼런스](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/AsyncOperation.html)
 - [컴파일러 오류 CS0815 — C# 레퍼런스](https://learn.microsoft.com/en-us/dotnet/csharp/misc/cs0815)
 
 이 글의 출발점이 된 자료는
 [leffe. — 유니티 6 Awaitable 소개](https://tearsinrain.tistory.com/21)
 (2025-03-20)이다. `Awaitable`이 `Task`와 다른 세 가지는
 [Unity 코드 최적화 문서를 정리한 글](/posts/unity-code-optimization/)에서 먼저
-다뤘고, 이 글에서는 **쓰는 쪽**을 현행 스크립팅 레퍼런스에 대조했다. 확인
-시점은 2026-10-07이다.
+다뤘고, 이 글에서는 **쓰는 쪽**을 대조했다. 정적 멤버 목록은 **2023.1·6.2·6.3·
+6.4 네 판본**에서 같았고, `Awaitable.WhenAll` 페이지는 404였다. `AsTask()`,
+`Application.exitCancellationToken`, `yield return` 제약은 매뉴얼의 Awaitable
+절 셋에서 확인했다. 확인 시점은 2026-10-07이다.
