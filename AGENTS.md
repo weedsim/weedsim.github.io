@@ -88,6 +88,9 @@ Fix broken internal link in the Addressables post
 Run these in order. Do not skip ahead — step 8 exists because guessing the
 user's motivation wastes a whole post.
 
+Leave the **evidence in section 3.1** at every step. There are enough steps
+that dropping one and carrying on to the end leaves the user no way to notice.
+
 1. **Check the clock.** `TZ=Asia/Seoul date`. Pick a `pubDatetime` at least a
    few minutes in the past.
 2. **Read the clipping** the user named.
@@ -104,8 +107,8 @@ user's motivation wastes a whole post.
 7. **Run the single-file check** (section 6.1), then hand the file to the user
    and commit it. Do this *before* asking anything. The pair check does not
    apply yet — the English file does not exist.
-8. **Ask two questions and wait.** Never ask about tags empty-handed —
-   propose a set, then let the user decide.
+8. **Ask two questions, confirm one thing, and wait.** Never ask about tags
+   empty-handed — propose a set, then let the user decide.
    - **계기** — why did the user actually save this clipping? Never invent it.
      If you have a guess, put it as "this is how it looks — right?" and only
      get it confirmed.
@@ -123,6 +126,11 @@ user's motivation wastes a whole post.
      Then **ask explicitly whether to keep it as is, drop something, or swap
      something.** A recommendation is only that; nothing is settled until the
      user answers, and `tags.ts` stays untouched until then.
+   - **Filename and title** — not a question, a **confirmation**. Show them
+     with a line each on why section 4.1 produced those, and ask whether to
+     change them. Step 7 already committed the file under that name, so a
+     change means fixing the **filename, `translationKey`, and the internal
+     links in other posts.** Say what that costs.
 9. **Apply the answers.** If the motivation changes what the post is about,
    rewrite it rather than patching the intro.
 10. **Write the English post** to `src/content/posts/_en/<same-slug>.md`.
@@ -130,11 +138,45 @@ user's motivation wastes a whole post.
     (6.2)**, commit both, and give the user the `pnpm build` command (6.3) and
     the commit message.
 
+### 3.1 Per-step evidence
+
+**Every step leaves evidence.** A step whose evidence you cannot produce **did
+not run** — do not mark it done, go back and do it. Where the evidence is
+command output, **paste the output as-is; do not summarize it.** A summary can
+be invented; output is harder to invent.
+
+| Step | Evidence |
+|---|---|
+| 1 clock | `TZ=Asia/Seoul date` output as-is + the `pubDatetime` chosen |
+| 2 clipping | filename · line count · its `source` URL · author · date |
+| 3 overlap | slugs of the existing posts **actually opened** (or "none") |
+| 4 angle | one sentence: which claim, number or label it goes after |
+| 5 verify | primary-source URLs opened + **URLs that failed, and why** |
+| 6 Korean | file path + byte size + **why that filename and title** (4.1) |
+| 7 single check | the 6.1 `printf` line as-is + the (a)(b)(c) results |
+| 8 questions | both questions + the four tag items + filename/title confirm |
+| 9 apply | which sections changed; say "rewritten" if it was rewritten |
+| 10 English | file path + byte size |
+| 11 pair check | the two 6.2 rows as-is + any mismatch |
+
+**There are two checkpoints:** right after step 7 (when you ask the user) and
+right after step 11 (when you hand over the build command). At both, **print
+the table again** — rows 1–7 at the first, rows 8–11 at the second. Those two
+moments are the only ones where the user gets to speak; a step missed there is
+only found after the whole post is done.
+
+When printing it, **add a `status` column** with one of `done` / `incomplete` /
+`skipped`. **Never hide an `incomplete` or a `skipped`** — letting the user
+re-issue that step is the entire point of the table.
+
+This is not a request to narrate every step. It is one table, twice.
+
 ---
 
 ## 4. Front matter
 
 Exactly this shape. **There is no `slug` field** — the filename is the slug.
+How that name is chosen is in **4.1**.
 
 ```yaml
 ---
@@ -154,6 +196,73 @@ description: "..."
 `translationKey` and `pubDatetime` must be **identical** between the Korean
 file and its English counterpart. Only `lang`, `title`, `description`, the tag
 labels, and the prose differ.
+
+### 4.1 Filename and title
+
+They do **different jobs.** The filename names the **subject**; the title
+states the **finding**. The filename is the URL and is shared by both
+languages, so it has to be an identifier that is never translated. The title
+has to be a sentence that reads in its own language.
+
+The counts below were taken **2026-10-07 across 81 posts** (the theme sample
+`hello.md` excluded). If they feel stale, count again.
+
+```bash
+ls src/content/posts/*.md | grep -v '/hello\.md$' | wc -l
+ls src/content/posts/*.md | grep -v '/hello\.md$' | xargs -n1 basename |
+  sed 's/\.md$//' |
+  awk '{n=split($0,a,"-"); w[n]++} END {for (k in w) print k" tokens: "w[k]}'
+```
+
+**Filename (= slug = `translationKey`)**
+
+- **ASCII lowercase and hyphens only.** No capitals, underscores, dots or
+  Korean. All 81 current posts hold to this.
+- **Two to four hyphen tokens.** The spread is 20 / 42 / 18, and the only
+  five-token slug is `unity-2d-one-way-platform`, where a compound
+  (`one-way`) pushed the count up. Five *concepts* means the subject was
+  never narrowed. The longest is `character-controller-isgrounded`
+  (31 characters).
+- **Do not translate the title — name the subject.** For example the title
+  "파도 전선이 뭔가 했더니 wavefront였다" lives at
+  `unity-gpu-optimization-page`.
+- **Put the actual identifier in it:** `overlapsphere-layermask`,
+  `unity-awaitable`, `audiomixer-groups-snapshots`. The name a person would
+  search for has to be in there.
+- **Check the name is not taken** — `ls src/content/posts/`. The filename is
+  the URL, so a collision overwrites.
+- Never append `-2` or `-part2` for a follow-up. If the post adds a layer,
+  **name the layer** — the way `audiomixer-groups-snapshots` follows
+  `unity-audiomixer-volume`.
+
+**Title**
+
+- **Always quote it.** All 81 titles are quoted, because colons, backticks and
+  quotation marks really do occur in them. An unquoted `title` containing `:`
+  is invalid YAML, and that only surfaces at build time (6.3).
+- **End it as a statement.** The title is the finding, written as a sentence.
+  A title that is only "How to …" or "… notes" hides the post's angle.
+- There are **only two shapes.** All 81 posts use one of them.
+  1. **The bare sentence** — when the sentence itself names the subject.
+     "An Outline Is Duplicated Vertices, Not a Shader"
+  2. **`Subject: finding`** — when the subject's name does not fit inside the
+     sentence (reference-style or survey posts). 24 posts take this shape.
+     "Installing Newtonsoft Json: The Version Field Is Meant to Be Empty"
+- **Negating an expectation fits best.** 43 of the 81 Korean titles contain
+  one of `아니 / 않 / 없 / 못`. The angle (step 4) is what the source got
+  wrong or left out, so the title tends to come out that way. **Do not force
+  a negation**, though — if the finding is not a negation, just state it.
+- **The English title is a restatement, not a translation.** Write the same
+  finding as an English sentence. ("asmdef를 만들면 Assembly-CSharp가 안
+  보인다" → "Create an asmdef and Assembly-CSharp Goes Dark")
+- English titles are **Title Case**, except that **identifiers keep their own
+  casing** — `adb`, `await`, `isGrounded`, `lilToon` and `huggingface-cli`
+  stay lowercase even in first position.
+
+**The filename and title get confirmed at step 8 too.** Step 7 already
+committed the file under that name, so changing it means fixing the filename,
+`translationKey`, and the internal links in other posts. **Say what that
+costs when you show it.**
 
 ---
 
