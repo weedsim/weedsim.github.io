@@ -55,6 +55,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   index: { ko: "인덱스", en: "Index" },
   graphics: { ko: "그래픽스", en: "Graphics" },
   rendering: { ko: "렌더링", en: "Rendering" },
+  video: { ko: "비디오", en: "Video" },
   filesystem: { ko: "파일시스템", en: "File System" },
   linux: { ko: "리눅스", en: "Linux" },
   windows: { ko: "윈도우", en: "Windows" },
