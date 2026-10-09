@@ -26,6 +26,7 @@ export const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   animation: { ko: "애니메이션", en: "Animation" },
   input: { ko: "입력", en: "Input" },
   layout: { ko: "레이아웃", en: "Layout" },
+  scroll: { ko: "스크롤", en: "Scroll" },
   multiplayer: { ko: "멀티플레이어", en: "Multiplayer" },
   physics: { ko: "물리", en: "Physics" },
   simulation: { ko: "시뮬레이션", en: "Simulation" },
