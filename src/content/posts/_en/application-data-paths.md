@@ -1,5 +1,5 @@
 ---
-pubDatetime: 2026-10-12T22:30:00+09:00
+pubDatetime: 2026-10-12T21:20:00+09:00
 title: "What's in LocalLow Is persistentDataPath, Not dataPath"
 lang: en
 translationKey: application-data-paths

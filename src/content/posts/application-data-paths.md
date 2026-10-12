@@ -1,5 +1,5 @@
 ---
-pubDatetime: 2026-10-12T22:30:00+09:00
+pubDatetime: 2026-10-12T21:20:00+09:00
 title: "LocalLow에 있는 건 dataPath가 아니라 persistentDataPath다"
 lang: ko
 translationKey: application-data-paths
