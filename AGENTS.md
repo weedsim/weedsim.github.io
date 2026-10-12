@@ -91,8 +91,12 @@ That is why the step 7 block carries an existence check.
    errors that only appear at render time. This has bitten this repo more than
    once.
 2. **`pubDatetime` must be in the past.** Production builds silently drop
-   future-dated posts via `postFilter.ts` + `scheduledPostMargin`. Check the
-   real clock in Asia/Seoul first: `TZ=Asia/Seoul date`.
+   future-dated posts via `postFilter.ts` + `scheduledPostMargin` (default
+   `15 * 60 * 1000`, so a post first appears 15 minutes before its
+   `pubDatetime`). `pnpm dev` shows future-dated posts anyway, because the
+   same function checks `import.meta.env.DEV` first — the dev server cannot
+   catch this. Take the clock from the command in step 1 of section 3 and
+   verify with the check in section 6.1.
 3. **Do not run install or system-changing commands on the user's behalf.**
    Print the command and let the user run it. Package installs especially —
    the user needs to see the block message themselves.
@@ -130,8 +134,24 @@ user's motivation wastes a whole post.
 Leave the **evidence in section 3.1** at every step. There are enough steps
 that dropping one and carrying on to the end leaves the user no way to notice.
 
-1. **Check the clock.** `TZ=Asia/Seoul date`. Pick a `pubDatetime` at least a
-   few minutes in the past.
+1. **Pin the clock in KST.** Do not read a UTC clock and add nine hours in
+   your head. Take the output of this line as-is and pick a `pubDatetime`
+   **earlier** than it.
+
+   ```bash
+   TZ=Asia/Seoul date '+%Y-%m-%dT%H:%M:%S+09:00'
+   ```
+
+   When several posts go up on the same day, pick a time **later than the
+   previous post and earlier than now**.
+
+   > This rule used to exist only as the sentence "must be in the past".
+   > **It was broken on three consecutive posts on 2026-10-12**, by guessing a
+   > KST time from a UTC clock; the user found it because the posts were not
+   > on the site. Hence the machine verdict in section 6.1. **A rule written
+   > only as prose went unfollowed; a rule written as output cannot be
+   > hidden.**
+
 2. **Read the clipping** the user named.
 3. **Check for overlap.** List `src/content/posts/` and read any existing post
    on the same topic. The new post must not repeat an earlier one's angle.
@@ -188,7 +208,7 @@ format — follow **section 3.2** exactly.
 
 | Step | Evidence |
 |---|---|
-| 1 clock | `TZ=Asia/Seoul date` output as-is + the `pubDatetime` chosen |
+| 1 clock | the KST one-liner output as-is + the `pubDatetime` chosen + the verdict line from 6.1 (`pubDatetime OK …`) |
 | 2 clipping | filename · line count · its `source` URL · author · date |
 | 3 overlap | slugs of the existing posts **actually opened** (or "none") |
 | 4 angle | one sentence: which claim, number or label it goes after |
@@ -519,9 +539,30 @@ What this file must satisfy on its own:
 - **`fences` is even.** An odd count means an unclosed code block, which
   swallows the rest of the page.
 - **`translationKey` equals the filename** without `.md`.
-- **`pubDatetime` is in the past.** Compare against `TZ=Asia/Seoul date`. A
-  future date is dropped silently in a production build — `astro check` and
-  `pnpm build` both stay quiet about it.
+- **`pubDatetime` is in the past.** Do not compare by eye — **paste the
+  output of the verdict block below.** A future date is dropped silently in a
+  production build; `astro check` and `pnpm build` both stay quiet about it,
+  and `pnpm dev` shows it anyway (section 3, step 1).
+
+```bash
+# pubDatetime verdict — do not compare this by eye
+now=$(TZ=Asia/Seoul date '+%Y-%m-%dT%H:%M:%S')
+pub=$(grep -m1 '^pubDatetime:' "$f" | sed 's/^pubDatetime: *//; s/+09:00$//')
+if [ -z "$pub" ]; then
+  echo "!! could not read pubDatetime — check the path first (section 1)"
+elif [ "$pub" \> "$now" ]; then
+  echo "!! future ($pub > $now) — the post will vanish from a production build"
+else
+  echo "pubDatetime OK ($pub <= $now)"
+fi
+```
+
+The verdict is a string comparison, which works because
+`YYYY-MM-DDTHH:MM:SS` is fixed-width, so lexical order is chronological order.
+**Change the front-matter date format and this check breaks silently.** All
+four cases were run for real — a past post, a future post, a file with no
+`pubDatetime`, and **a file that does not exist**. The last one must not read
+as a pass (same class of bug as the `CR:0` incident in section 3.2).
 
 Then three things a count can't tell you:
 
